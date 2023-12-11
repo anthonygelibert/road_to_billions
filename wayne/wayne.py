@@ -2,5 +2,7 @@
 
 """ Wayne script. """
 
+from utils.config import get_config
+
 if __name__ == '__main__':
-    pass
+    print(get_config())
