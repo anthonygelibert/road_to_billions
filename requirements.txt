@@ -1,2 +1,8 @@
+# To manipulate crypto-currencies
 python-binance~=1.0
+# To simplify dataclass creation
 pydantic~=2.5
+# To manage the parameters/options/flags.
+click~=8.1
+# To get a better local TUI.
+rich~=13.6
