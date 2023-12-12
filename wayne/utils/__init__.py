@@ -2,4 +2,5 @@
 
 """ Wayne utilities. """
 
-__all__ = []
+from .config import *
+from .version import *
