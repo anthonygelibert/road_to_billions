@@ -33,3 +33,25 @@ class OutputFile(click.Path):
             self.fail(f"File {path} as wrong suffix ({self.suffix}).", param, ctx)
 
         return path
+
+
+class InputFile(click.Path):
+    """ Parameter is an input file. """
+    name = "input_file"
+    """ Parameter’s name. """
+
+    def __init__(self, suffix: str | list[str] | None = None) -> None:
+        super().__init__(exists=True, dir_okay=False)
+        self.suffix = [suffix] if suffix is not None and isinstance(suffix, str) else suffix
+        """ Suffix to validate. """
+
+    def convert(self, value: str, param: Argument | None, ctx: Context | None) -> Path:
+        """ Convert the input to a resolved and expanded path. """
+        value = Path(value)
+        path = value.expanduser().resolve()
+        path = Path(super().convert(path, param, ctx))
+
+        if self.suffix and path.suffix not in self.suffix:
+            self.fail(f"File {path} as wrong suffix ({self.suffix}).", param, ctx)
+
+        return path

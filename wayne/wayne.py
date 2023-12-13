@@ -10,8 +10,10 @@ from pathlib import Path
 import click
 # noinspection PyPackageRequirements
 from binance import Client
+from rich import print
 
 import utils
+from utils.models import Product  # TODO: discuss
 
 
 @click.group(no_args_is_help=True, context_settings=dict(help_option_names=['-h', '--help']))
@@ -37,6 +39,15 @@ def save_exchange_info(output_json: Path) -> int:
     client = Client(api_key=config.api_key, api_secret=config.api_secret)
 
     output_json.write_text(json.dumps(client.get_exchange_info(), indent=2))
+
+    return utils.EX_OK
+
+
+@test.command(context_settings=dict(help_option_names=['-h', '--help']))
+@click.argument("input_json", type=utils.InputFile(suffix=".json"))
+def load_exchange_info(input_json: Path) -> int:
+    """ Load existing exchange information. """
+    print(Product.model_validate_json(input_json.read_text(), strict=True))
 
     return utils.EX_OK
 
