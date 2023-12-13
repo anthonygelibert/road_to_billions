@@ -2,6 +2,7 @@
 
 """ Wayne script. """
 
+import json
 import logging
 import sys
 from pathlib import Path
@@ -35,7 +36,7 @@ def save_exchange_info(output_json: Path) -> int:
     config = utils.get_config()
     client = Client(api_key=config.api_key, api_secret=config.api_secret)
 
-    output_json.write_text(str(client.get_exchange_info()))
+    output_json.write_text(json.dumps(client.get_exchange_info(), indent=2))
 
     return utils.EX_OK
 
