@@ -15,6 +15,8 @@ import utils
 @click.version_option(utils.get_version())
 def cli(verbose: bool) -> int:
     """ Tools for datasets. """
+    utils.setup_logging(verbose)
+
     return utils.EX_OK
 
 
