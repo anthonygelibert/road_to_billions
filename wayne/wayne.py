@@ -4,8 +4,11 @@
 
 import logging
 import sys
+from pathlib import Path
 
 import click
+# noinspection PyPackageRequirements
+from binance import Client
 
 import utils
 
@@ -16,6 +19,23 @@ import utils
 def cli(verbose: bool) -> int:
     """ Tools for datasets. """
     utils.setup_logging(verbose)
+    return utils.EX_OK
+
+
+@cli.group(context_settings=dict(help_option_names=['-h', '--help']))
+def test() -> None:
+    """ Group for the test commands. """
+    pass
+
+
+@test.command(context_settings=dict(help_option_names=['-h', '--help']))
+@click.argument("output_json", type=utils.OutputFile(suffix=".json", exist_ok=True))
+def save_exchange_info(output_json: Path) -> int:
+    """ Save the exchange information as JSON file. """
+    config = utils.get_config()
+    client = Client(api_key=config.api_key, api_secret=config.api_secret)
+
+    output_json.write_text(str(client.get_exchange_info()))
 
     return utils.EX_OK
 
