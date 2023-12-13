@@ -6,14 +6,25 @@ import sys
 from functools import cache
 from os import EX_CONFIG
 from pathlib import Path
+from typing import Annotated, TypeAlias
 
-from pydantic import BaseModel, ValidationError
+from pydantic import AfterValidator, BaseModel, ValidationError
+
+
+def check_set_settings(val: str) -> str:
+    """ Ensure that `val` isn’t “CHANGE_ME.” """
+    if val == "CHANGE_ME":
+        raise ValueError("Please, change the default value…")
+    return val
+
+
+SetString: TypeAlias = Annotated[str, AfterValidator(check_set_settings)]
 
 
 class Settings(BaseModel, frozen=True):
     """ Bonaparte settings. """
-    api_key: str
-    api_secret: str
+    api_key: SetString
+    api_secret: SetString
 
 
 @cache
