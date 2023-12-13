@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Get version" type="PythonConfigurationType" factoryName="Python">
+  <configuration default="false" name="Version" type="PythonConfigurationType" factoryName="Python">
     <module name="wayne" />
     <option name="ENV_FILES" value="" />
     <option name="INTERPRETER_OPTIONS" value="" />
