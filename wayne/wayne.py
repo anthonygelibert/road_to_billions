@@ -13,7 +13,7 @@ from binance import Client
 from rich import print
 
 import utils
-from utils.models import Product  # TODO: discuss
+from utils.models import ExchangeInformation  # TODO: discuss
 
 
 @click.group(no_args_is_help=True, context_settings=dict(help_option_names=['-h', '--help']))
@@ -47,7 +47,7 @@ def save_exchange_info(output_json: Path) -> int:
 @click.argument("input_json", type=utils.InputFile(suffix=".json"))
 def load_exchange_info(input_json: Path) -> int:
     """ Load existing exchange information. """
-    print(Product.model_validate_json(input_json.read_text(), strict=True))
+    print(ExchangeInformation.model_validate_json(input_json.read_text(), strict=True))
 
     return utils.EX_OK
 
@@ -59,7 +59,7 @@ if __name__ == "__main__":
         logging.info("[bold]Stopped by user.")
         sys.exit(utils.EX_OK)
     except Exception as e:
-        logging.exception(f"[bold red]:x:  Unexpected error: {type(e).__name__}: {e}")
+        logging.critical(f"[bold red]:x:  Unexpected error: {type(e).__name__}: {e}", exc_info=True)
         sys.exit(utils.EX_SOFTWARE)
 
 if __name__ == '__main__':
