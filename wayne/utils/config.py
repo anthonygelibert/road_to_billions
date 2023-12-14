@@ -4,7 +4,7 @@
 
 import sys
 from functools import cache
-from os import EX_CONFIG
+from utils.retval import EX_CONFIG
 from pathlib import Path
 from typing import Annotated, TypeAlias
 

@@ -5,7 +5,7 @@
 import re
 import sys
 from functools import cache
-from os import EX_SOFTWARE
+from utils.retval import EX_SOFTWARE
 from pathlib import Path
 
 from rich import print
