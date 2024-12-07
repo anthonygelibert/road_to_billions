@@ -1,4 +1,4 @@
-""" Provide cross-platform retval. """
+"""Cross-platform return values."""
 
 import os
 

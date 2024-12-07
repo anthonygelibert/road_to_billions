@@ -1,4 +1,4 @@
-""" Typed configuration. """
+"""Typed configuration."""
 
 import sys
 from functools import cache
@@ -10,7 +10,11 @@ from pydantic import AfterValidator, BaseModel, ValidationError
 
 
 def check_set_settings(val: str) -> str:
-    """ Ensure that `val` isn’t “CHANGE_ME.” """
+    """
+    Check “val” isn’t CHANGE_ME.
+
+    :raise ValueError: Value is still the default one.
+    """
     if val == "CHANGE_ME":
         raise ValueError("Please, change the default value…")
     return val
@@ -27,7 +31,7 @@ class Settings(BaseModel, frozen=True):
 
 @cache
 def get_config() -> Settings:
-    """ Current configuration. """
+    """Get the current configuration."""
     try:
         return Settings.model_validate_json((Path(__file__).parent.parent / "config.json").read_text())
     except FileNotFoundError as ex:

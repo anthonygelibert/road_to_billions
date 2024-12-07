@@ -1,3 +1,3 @@
-""" Wayne. """
+"""Wayne."""
 
 __all__ = ["wayne"]

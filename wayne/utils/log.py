@@ -1,4 +1,4 @@
-""" Log-related tools. """
+"""Log-related tools."""
 
 import logging
 
@@ -8,7 +8,7 @@ from rich.console import Console
 
 
 def setup_logging(verbose: bool = False):
-    """ Setup console logging (DEBUG or INFO depending on verbose parameter). """
+    """Setup console logging (DEBUG or INFO depending on verbose parameter)."""
     log_level = logging.DEBUG if verbose else logging.INFO
     root_logger = logging.getLogger()
 

@@ -1,4 +1,4 @@
-""" Wayne utilities. """
+"""Wayne utilities."""
 
 from .click import *
 from .config import *

@@ -1,4 +1,4 @@
-""" Version-related utilities. """
+"""Version-related utilities."""
 
 import re
 import sys
