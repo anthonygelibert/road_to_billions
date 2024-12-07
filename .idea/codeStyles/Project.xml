@@ -21,7 +21,7 @@
       <option name="TRIM_TRAILING_WHITE_SPACES" value="true" />
       <option name="LEADING_WHITE_SPACES" value="true" />
     </CsvCodeStyleSettings>
-    <DB2CodeStyleSettings version="6">
+    <DB2CodeStyleSettings version="7">
       <option name="KEYWORD_CASE" value="2" />
       <option name="TYPE_CASE" value="2" />
       <option name="CUSTOM_TYPE_CASE" value="2" />
@@ -39,7 +39,7 @@
       <option name="IMP_IF_THEN_WRAP_THEN" value="true" />
       <option name="USE_GENERIC_STYLE" value="true" />
     </DB2CodeStyleSettings>
-    <DerbyCodeStyleSettings version="6">
+    <DerbyCodeStyleSettings version="7">
       <option name="KEYWORD_CASE" value="2" />
       <option name="TYPE_CASE" value="2" />
       <option name="CUSTOM_TYPE_CASE" value="2" />
@@ -61,7 +61,7 @@
       <option name="ADD_PARENTHESES_FOR_SINGLE_IMPORT" value="true" />
       <option name="ADD_LEADING_SPACE_TO_COMMENTS" value="true" />
     </GoCodeStyleSettings>
-    <H2CodeStyleSettings version="6">
+    <H2CodeStyleSettings version="7">
       <option name="KEYWORD_CASE" value="2" />
       <option name="TYPE_CASE" value="2" />
       <option name="CUSTOM_TYPE_CASE" value="2" />
@@ -79,7 +79,7 @@
       <option name="IMP_IF_THEN_WRAP_THEN" value="true" />
       <option name="USE_GENERIC_STYLE" value="true" />
     </H2CodeStyleSettings>
-    <HSQLCodeStyleSettings version="6">
+    <HSQLCodeStyleSettings version="7">
       <option name="KEYWORD_CASE" value="2" />
       <option name="TYPE_CASE" value="2" />
       <option name="CUSTOM_TYPE_CASE" value="2" />
@@ -140,7 +140,7 @@
       <option name="IF_RPAREN_ON_NEW_LINE" value="false" />
       <option name="CODE_STYLE_DEFAULTS" value="KOTLIN_OFFICIAL" />
     </JetCodeStyleSettings>
-    <MSSQLCodeStyleSettings version="6">
+    <MSSQLCodeStyleSettings version="7">
       <option name="KEYWORD_CASE" value="2" />
       <option name="TYPE_CASE" value="2" />
       <option name="CUSTOM_TYPE_CASE" value="2" />
@@ -158,7 +158,7 @@
       <option name="IMP_IF_THEN_WRAP_THEN" value="true" />
       <option name="USE_GENERIC_STYLE" value="true" />
     </MSSQLCodeStyleSettings>
-    <MySQLCodeStyleSettings version="6">
+    <MySQLCodeStyleSettings version="7">
       <option name="KEYWORD_CASE" value="2" />
       <option name="TYPE_CASE" value="2" />
       <option name="CUSTOM_TYPE_CASE" value="2" />
@@ -176,7 +176,7 @@
       <option name="IMP_IF_THEN_WRAP_THEN" value="true" />
       <option name="USE_GENERIC_STYLE" value="true" />
     </MySQLCodeStyleSettings>
-    <OracleCodeStyleSettings version="6">
+    <OracleCodeStyleSettings version="7">
       <option name="KEYWORD_CASE" value="2" />
       <option name="TYPE_CASE" value="2" />
       <option name="CUSTOM_TYPE_CASE" value="2" />
@@ -194,7 +194,7 @@
       <option name="IMP_IF_THEN_WRAP_THEN" value="true" />
       <option name="USE_GENERIC_STYLE" value="true" />
     </OracleCodeStyleSettings>
-    <PostgresCodeStyleSettings version="6">
+    <PostgresCodeStyleSettings version="7">
       <option name="KEYWORD_CASE" value="2" />
       <option name="TYPE_CASE" value="2" />
       <option name="CUSTOM_TYPE_CASE" value="2" />
@@ -223,7 +223,7 @@
       <option name="OPTIMIZE_IMPORTS_JOIN_FROM_IMPORTS_WITH_SAME_SOURCE" value="true" />
       <option name="OPTIMIZE_IMPORTS_CASE_INSENSITIVE_ORDER" value="true" />
     </Python>
-    <SQLiteCodeStyleSettings version="6">
+    <SQLiteCodeStyleSettings version="7">
       <option name="KEYWORD_CASE" value="2" />
       <option name="TYPE_CASE" value="2" />
       <option name="CUSTOM_TYPE_CASE" value="2" />
@@ -246,7 +246,7 @@
       <option name="REDIRECT_FOLLOWED_BY_SPACE" value="true" />
       <option name="KEEP_COLUMN_ALIGNMENT_PADDING" value="true" />
     </Shell_Script>
-    <SqlCodeStyleSettings version="6">
+    <SqlCodeStyleSettings version="7">
       <option name="KEYWORD_CASE" value="2" />
       <option name="TYPE_CASE" value="2" />
       <option name="CUSTOM_TYPE_CASE" value="2" />
@@ -276,7 +276,7 @@
       <option name="EXPR_CASE_END" value="1" />
       <option name="SUBQUERY_INDENT_INSIDE" value="true" />
     </SqlCodeStyleSettings>
-    <SybaseCodeStyleSettings version="6">
+    <SybaseCodeStyleSettings version="7">
       <option name="KEYWORD_CASE" value="2" />
       <option name="TYPE_CASE" value="2" />
       <option name="CUSTOM_TYPE_CASE" value="2" />
