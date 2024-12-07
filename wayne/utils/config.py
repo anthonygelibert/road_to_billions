@@ -2,11 +2,12 @@
 
 import sys
 from functools import cache
-from utils.retval import EX_CONFIG
 from pathlib import Path
 from typing import Annotated, TypeAlias
 
 from pydantic import AfterValidator, BaseModel, ValidationError
+
+from utils.retval import EX_CONFIG
 
 
 def check_set_settings(val: str) -> str:

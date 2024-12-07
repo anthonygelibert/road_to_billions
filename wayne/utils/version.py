@@ -3,10 +3,11 @@
 import re
 import sys
 from functools import cache
-from utils.retval import EX_SOFTWARE
 from pathlib import Path
 
 from rich import print  # noqa:A004
+
+from .retval import EX_SOFTWARE
 
 
 @cache
