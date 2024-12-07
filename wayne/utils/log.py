@@ -1,5 +1,3 @@
-# coding=utf-8
-
 """ Log-related tools. """
 
 import logging

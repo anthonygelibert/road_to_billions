@@ -1,5 +1,3 @@
-# coding=utf-8
-
 """ Provide cross-platform retval. """
 
 import os

@@ -1,4 +1,3 @@
-# coding=utf-8
 
 """ Wayne script. """
 

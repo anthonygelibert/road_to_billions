@@ -1,5 +1,3 @@
-# coding=utf-8
-
 """ Version-related utilities. """
 
 import re

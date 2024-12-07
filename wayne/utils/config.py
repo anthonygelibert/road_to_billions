@@ -1,5 +1,3 @@
-# coding=utf-8
-
 """ Typed configuration. """
 
 import sys
