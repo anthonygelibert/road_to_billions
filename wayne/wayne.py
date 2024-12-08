@@ -14,7 +14,7 @@ from utils.version import get_version
 @click.group(no_args_is_help=True, context_settings=dict(help_option_names=['-h', '--help']))
 @click.option("-v", "--verbose", is_flag=True, default=False, help="Enable verbose mode")
 @click.version_option(get_version())
-def cli(verbose: bool) -> None:
+def cli(*, verbose: bool) -> None:
     """Tools for datasets."""
     traceback.install(width=200, show_locals=verbose)
 
