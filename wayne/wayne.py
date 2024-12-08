@@ -2,13 +2,12 @@
 
 """Wayne script."""
 
-import logging
 import sys
 
 import click
+from rich import print, traceback  # noqa:A004
 
-from utils.log import setup_logging
-from utils.retval import EX_OK, EX_SOFTWARE
+from utils.retval import EX_OK
 from utils.version import get_version
 
 
@@ -17,15 +16,12 @@ from utils.version import get_version
 @click.version_option(get_version())
 def cli(verbose: bool) -> None:
     """Tools for datasets."""
-    setup_logging(verbose=verbose)
+    traceback.install(width=200, show_locals=verbose)
 
 
 if __name__ == "__main__":
     try:
         cli()
     except KeyboardInterrupt:
-        logging.info("[bold]Stopped by user.")
+        print("[bold]Stopped by user.")
         sys.exit(EX_OK)
-    except Exception as e:
-        logging.critical(f"[bold red]:x:  Unexpected error: {type(e).__name__}: {e}", exc_info=True)
-        sys.exit(EX_SOFTWARE)
