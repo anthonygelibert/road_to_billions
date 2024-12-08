@@ -5,7 +5,7 @@ from functools import cache
 from pathlib import Path
 from typing import Annotated, TypeAlias
 
-from pydantic import AfterValidator, BaseModel, ValidationError
+from pydantic import AfterValidator, BaseModel, ConfigDict, ValidationError
 
 from utils.retval import EX_CONFIG
 
@@ -24,8 +24,11 @@ def check_set_settings(val: str) -> str:
 SetString: TypeAlias = Annotated[str, AfterValidator(check_set_settings)]
 
 
-class Settings(BaseModel, frozen=True):
-    """ Bonaparte settings. """
+class Settings(BaseModel):
+    """Bonaparte settings."""
+
+    model_config = ConfigDict(frozen=True)
+
     api_key: SetString
     api_secret: SetString
 
