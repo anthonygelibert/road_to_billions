@@ -6,3 +6,5 @@ pydantic~=2.10
 click~=8.1
 # To get a better local TUI.
 rich~=13.9
+# To statically check the typing
+mypy~=1.12
