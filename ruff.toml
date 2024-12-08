@@ -1,0 +1,38 @@
+line-length = 120
+target-version = "py312"
+src = ["wayne"]
+output-format = "concise"
+
+[lint]
+allowed-confusables = ["’"]
+# By default, enable *all* lint rules.
+select = ["ALL"]
+# Enable *preview* to allow “experimental” rules.
+preview = true
+# Source: https://docs.astral.sh/ruff/rules
+#    B024: flake8-bugbear        — Checks for abstract classes without abstract methods.
+#    D107: pydocstyle            — Missing docstring in __init__.
+#    D203: pydocstyle            — 1 blank line required before class docstring.
+#    D212: pydocstyle            — Multi-line docstring summary should start at the first line.
+#  FIX002: flake8-fixme          — Line contains TODO, consider resolving the issue.
+#    G004: flake8-logging-format — Checks for uses of f-strings to format logging messages.
+#    S101: flake8-bandit         — Use of assert detected.
+#    T201: flake8-print          — print found.
+#  TID252: flake8-tidy-imports   — Checks for relative imports.
+ignore = ["B024", "D107", "D203", "D212", "FIX002", "G004", "S101", "T201", "TID252"]
+# Add some ignores that shouldn’t be in the “regular” list but are useful.
+#    CPY: flake8-copyright    — Ignore **EVERYTHING**.
+#    DOC: pydoclint           — Ignore **EVERYTHING**.
+#   I001: isort               — Ignore the import problems… Required until ruff implements all the options of isort for the multilines.
+extend-ignore = ["CPY", "DOC", "I001"]
+
+[lint.per-file-ignores]
+# Ignore F822 (undefined-export) in all “__init__.py” files (due to “preview”).
+"__init__.py" = ["F822"]
+
+[lint.isort]
+known-local-folder = ["sacha"]
+no-lines-before = ["local-folder"]
+order-by-type = false
+relative-imports-order = "closest-to-furthest"
+

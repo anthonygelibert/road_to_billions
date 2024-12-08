@@ -22,7 +22,10 @@ help: ## Show help
 				printf "  ${YELLOW}%-$(TARGET_MAX_CHAR_NUM)s${RESET} ${GREEN}%s${RESET}\n", $$1, $$2 \
 			}'
 
-check: check_mypy ## Apply all code checkers
+check: check_ruff check_mypy ## Apply all code checkers
+
+check_ruff: ## Code checking with ruff
+	ruff check --config ruff.toml wayne
 
 check_mypy: ## Code checking with Mypy
 	MYPYPATH=wayne mypy --install-types --explicit-package-bases --config-file mypy.ini wayne
