@@ -17,7 +17,8 @@ def check_set_settings(val: str) -> str:
     :raise ValueError: Value is still the default one.
     """
     if val == "CHANGE_ME":
-        raise ValueError("Please, change the default value…")
+        msg = "Please, change the default value…"
+        raise ValueError(msg)
     return val
 
 
