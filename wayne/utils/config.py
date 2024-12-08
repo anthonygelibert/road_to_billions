@@ -5,7 +5,7 @@ from functools import cache
 from pathlib import Path
 from typing import Annotated
 
-from pydantic import AfterValidator, BaseModel, ConfigDict, ValidationError
+from pydantic import AfterValidator, BaseModel, ConfigDict, SecretStr, ValidationError
 from rich import print  # noqa:A004
 
 from utils.retval import EX_CONFIG
@@ -23,7 +23,7 @@ def check_set_settings(val: str) -> str:
     return val
 
 
-type SetString = Annotated[str, AfterValidator(check_set_settings)]
+type SetString = Annotated[SecretStr, AfterValidator(check_set_settings)]
 
 
 class Settings(BaseModel):
