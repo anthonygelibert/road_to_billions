@@ -1,5 +1,4 @@
 # To manipulate crypto-currencies
-python-binance~=1.0
 # To simplify dataclass creation
 pydantic~=2.10
 # To manage the parameters/options/flags.
