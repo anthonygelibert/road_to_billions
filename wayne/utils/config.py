@@ -3,7 +3,7 @@
 import sys
 from functools import cache
 from pathlib import Path
-from typing import Annotated, TypeAlias
+from typing import Annotated
 
 from pydantic import AfterValidator, BaseModel, ConfigDict, ValidationError
 
@@ -22,7 +22,7 @@ def check_set_settings(val: str) -> str:
     return val
 
 
-SetString: TypeAlias = Annotated[str, AfterValidator(check_set_settings)]
+type SetString = Annotated[str, AfterValidator(check_set_settings)]
 
 
 class Settings(BaseModel):
