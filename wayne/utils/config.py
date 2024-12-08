@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Annotated
 
 from pydantic import AfterValidator, BaseModel, ConfigDict, ValidationError
+from rich import print  # noqa:A004
 
 from utils.retval import EX_CONFIG
 
