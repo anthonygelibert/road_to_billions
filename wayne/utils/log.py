@@ -7,7 +7,7 @@ import rich.logging
 from rich.console import Console
 
 
-def setup_logging(*, verbose: bool = False):
+def setup_logging(*, verbose: bool = False) -> None:
     """Setup console logging (DEBUG or INFO depending on verbose parameter)."""
     log_level = logging.DEBUG if verbose else logging.INFO
     root_logger = logging.getLogger()
