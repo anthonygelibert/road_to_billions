@@ -8,3 +8,7 @@ click~=8.1
 rich~=13.9
 # To statically check the typing
 mypy~=1.12
+# To display graphs
+plotly~=5.24
+# To manipulate data
+pandas~=2.2
