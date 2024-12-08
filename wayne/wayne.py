@@ -5,8 +5,13 @@
 import sys
 
 import click
+import pandas as pd
+import plotly.graph_objects as go
+# noinspection PyPackageRequirements
+from binance.spot import Spot as Client
 from rich import print, traceback  # noqa:A004
 
+from utils.config import get_config
 from utils.retval import EX_OK
 from utils.version import get_version
 
@@ -17,6 +22,24 @@ from utils.version import get_version
 def cli(*, verbose: bool) -> None:
     """Tools for datasets."""
     traceback.install(width=200, show_locals=verbose)
+
+
+@cli.command()
+def btcusdt() -> None:
+    """Display BTC2USD curve."""
+    client = Client(get_config().api_key.get_secret_value(), get_config().api_secret.get_secret_value())
+
+    column_names = ["Open time", "Open price", "High price", "Low price", "Close price", "Volume", "Kline close time",
+                    "Quote asset volume", "Number of trades", "Taker buy base asset volume",
+                    "Taker buy quote asset volume", "Ignore"]
+    # noinspection PyArgumentList
+    kls = pd.DataFrame(client.ui_klines(symbol="BTCUSDT", interval="1d", limit=1000), columns=column_names)
+    kls["Open time"] = pd.to_datetime(kls["Open time"], unit="ms")
+    candlestick = go.Candlestick(x=kls["Open time"], open=kls["Open price"], high=kls["High price"],
+                                 low=kls["Low price"], close=kls["Close price"])
+    fig = go.Figure(data=[candlestick])
+    fig.update_layout(width=800, height=600, title="BTCUSDT", yaxis_title="Price")
+    fig.show()
 
 
 if __name__ == "__main__":
