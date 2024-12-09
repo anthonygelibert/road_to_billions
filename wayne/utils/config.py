@@ -1,35 +1,43 @@
-# coding=utf-8
-
-""" Typed configuration. """
+"""Typed configuration."""
 
 import sys
 from functools import cache
-from utils.retval import EX_CONFIG
 from pathlib import Path
-from typing import Annotated, TypeAlias
+from typing import Annotated
 
-from pydantic import AfterValidator, BaseModel, ValidationError
+from pydantic import AfterValidator, BaseModel, ConfigDict, SecretStr, ValidationError
+from rich import print  # noqa:A004
+
+from utils.retval import EX_CONFIG
 
 
 def check_set_settings(val: str) -> str:
-    """ Ensure that `val` isn’t “CHANGE_ME.” """
+    """
+    Check “val” isn’t CHANGE_ME.
+
+    :raise ValueError: Value is still the default one.
+    """
     if val == "CHANGE_ME":
-        raise ValueError("Please, change the default value…")
+        msg = "Please, change the default value…"
+        raise ValueError(msg)
     return val
 
 
-SetString: TypeAlias = Annotated[str, AfterValidator(check_set_settings)]
+type SetString = Annotated[SecretStr, AfterValidator(check_set_settings)]
 
 
-class Settings(BaseModel, frozen=True):
-    """ Bonaparte settings. """
+class Settings(BaseModel):
+    """Bonaparte settings."""
+
+    model_config = ConfigDict(frozen=True)
+
     api_key: SetString
     api_secret: SetString
 
 
 @cache
 def get_config() -> Settings:
-    """ Current configuration. """
+    """Get the current configuration."""
     try:
         return Settings.model_validate_json((Path(__file__).parent.parent / "config.json").read_text())
     except FileNotFoundError as ex:

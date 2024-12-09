@@ -1,5 +1,3 @@
-# coding=utf-8
-
-""" Wayne. """
+"""Wayne."""
 
 __all__ = ["wayne"]

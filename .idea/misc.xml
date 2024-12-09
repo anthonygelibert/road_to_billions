@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="Black">
-    <option name="sdkName" value="Python 3.12 (road-to-billions)" />
+    <option name="sdkName" value="Python 3.12 (road_to_billions)" />
   </component>
   <component name="CodeInsightWorkspaceSettings">
     <option name="optimizeImportsOnTheFly" value="true" />
@@ -18,7 +18,7 @@
   <component name="ProjectResources">
     <xml-schema-version>XMLSchema_1_1</xml-schema-version>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_21" default="true" project-jdk-name="Python 3.12 (road-to-billions)" project-jdk-type="Python SDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_21" default="true" project-jdk-name="Python 3.12 (road_to_billions)" project-jdk-type="Python SDK">
     <output url="file://$PROJECT_DIR$/out" />
   </component>
   <component name="PythonCompatibilityInspectionAdvertiser">
@@ -27,16 +27,8 @@
   <component name="ReaderModeSettings">
     <option name="enableVisualFormatting" value="true" />
   </component>
-  <component name="TaskManager">
-    <task active="true" id="Default" summary="Default task">
-      <created>1682879317195</created>
-      <option name="number" value="Default" />
-      <option name="presentableId" value="Default" />
-      <updated>1682879317195</updated>
-      <workItem from="1692906429452" duration="139000" />
-      <workItem from="1695546477551" duration="13000" />
-    </task>
-    <servers />
+  <component name="TaskProjectConfiguration">
+    <server type="GitHub" url="https://github.com" />
   </component>
   <component name="TimeTrackingManager">
     <option name="totallyTimeSpent" value="152000" />

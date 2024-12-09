@@ -1,27 +1,21 @@
-# coding=utf-8
-
-""" Version-related utilities. """
+"""Version-related utilities."""
 
 import re
 import sys
 from functools import cache
-from utils.retval import EX_SOFTWARE
 from pathlib import Path
 
-from rich import print
+from rich import print  # noqa:A004
+
+from .retval import EX_SOFTWARE
 
 
 @cache
 def get_version() -> str:
-    """ Get current Bonaparte version. """
+    """Get current Bonaparte version."""
 
     def is_semantic_version_number(version: str) -> bool:
-        """
-        Is a semantic version number?
-
-        - https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
-        - https://regex101.com/r/Ly7O1x/3/
-        """
+        """Check if the version number respects the “semantic versioning” pattern."""
         return re.match(r"^(?:0|[1-9]\d*)"
                         r"[.](?:0|[1-9]\d*)"
                         r"[.](?:0|[1-9]\d*)"
@@ -31,13 +25,13 @@ def get_version() -> str:
 
     try:
         _version = (Path(__file__).parent.parent / "version").read_text().strip()
-        if not is_semantic_version_number(_version):
-            print(f"[bold red]:x:  version isn’t a valid semver ({_version})", file=sys.stderr, flush=True)
-            sys.exit(EX_SOFTWARE)
-        return _version
+        if is_semantic_version_number(_version):
+            return _version
+        print(f"[bold red]:x:  version isn’t a valid semver ({_version})", file=sys.stderr, flush=True)
+        sys.exit(EX_SOFTWARE)
     except FileNotFoundError as ex:
-        print(f"[bold red]:x:  Can't find the 'version' file: {ex.filename}", file=sys.stderr, flush=True)
+        print(f"[bold red]:x:  Can’t find the 'version' file: {ex.filename}", file=sys.stderr, flush=True)
         sys.exit(EX_SOFTWARE)
     except PermissionError as ex:
-        print(f"[bold red]:x:  Can't read the 'version' file: {ex}", file=sys.stderr, flush=True)
+        print(f"[bold red]:x:  Can’t read the 'version' file: {ex}", file=sys.stderr, flush=True)
         sys.exit(EX_SOFTWARE)

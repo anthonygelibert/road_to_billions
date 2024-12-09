@@ -1,66 +1,50 @@
-# coding=utf-8
+#!/usr/bin/env python3.12
 
-""" Wayne script. """
+"""Wayne script."""
 
-import json
-import logging
 import sys
-from pathlib import Path
 
 import click
+import pandas as pd
+import plotly.graph_objects as go
 # noinspection PyPackageRequirements
-from binance import Client
-from rich import print
+from binance.spot import Spot as Client
+from rich import print, traceback  # noqa:A004
 
-import utils
-from utils.models import ExchangeInformation  # TODO: discuss
+from utils.config import get_config
+from utils.retval import EX_OK
+from utils.version import get_version
 
 
-@click.group(no_args_is_help=True, context_settings=dict(help_option_names=['-h', '--help']))
+@click.group(no_args_is_help=True, context_settings={"help_option_names": ["-h", "--help"]})
 @click.option("-v", "--verbose", is_flag=True, default=False, help="Enable verbose mode")
-@click.version_option(utils.get_version())
-def cli(verbose: bool) -> int:
-    """ Tools for datasets. """
-    utils.setup_logging(verbose)
-    return utils.EX_OK
+@click.version_option(get_version())
+def cli(*, verbose: bool) -> None:
+    """Tools for datasets."""
+    traceback.install(width=200, show_locals=verbose)
 
 
-@cli.group(context_settings=dict(help_option_names=['-h', '--help']))
-def test() -> None:
-    """ Group for the test commands. """
-    pass
+@cli.command()
+def btcusdt() -> None:
+    """Display BTC2USD curve."""
+    client = Client(get_config().api_key.get_secret_value(), get_config().api_secret.get_secret_value())
 
-
-@test.command(context_settings=dict(help_option_names=['-h', '--help']))
-@click.argument("output_json", type=utils.OutputFile(suffix=".json", exist_ok=True))
-def save_exchange_info(output_json: Path) -> int:
-    """ Save the exchange information as JSON file. """
-    config = utils.get_config()
-    client = Client(api_key=config.api_key, api_secret=config.api_secret)
-
-    output_json.write_text(json.dumps(client.get_exchange_info(), indent=2))
-
-    return utils.EX_OK
-
-
-@test.command(context_settings=dict(help_option_names=['-h', '--help']))
-@click.argument("input_json", type=utils.InputFile(suffix=".json"))
-def load_exchange_info(input_json: Path) -> int:
-    """ Load existing exchange information. """
-    print(ExchangeInformation.model_validate_json(input_json.read_text(), strict=True))
-
-    return utils.EX_OK
+    column_names = ["Open time", "Open price", "High price", "Low price", "Close price", "Volume", "Kline close time",
+                    "Quote asset volume", "Number of trades", "Taker buy base asset volume",
+                    "Taker buy quote asset volume", "Ignore"]
+    # noinspection PyArgumentList
+    kls = pd.DataFrame(client.ui_klines(symbol="BTCUSDT", interval="1d", limit=1000), columns=column_names)
+    kls["Open time"] = pd.to_datetime(kls["Open time"], unit="ms")
+    candlestick = go.Candlestick(x=kls["Open time"], open=kls["Open price"], high=kls["High price"],
+                                 low=kls["Low price"], close=kls["Close price"])
+    fig = go.Figure(data=[candlestick])
+    fig.update_layout(width=800, height=600, title="BTCUSDT", yaxis_title="Price")
+    fig.show()
 
 
 if __name__ == "__main__":
     try:
         cli()
     except KeyboardInterrupt:
-        logging.info("[bold]Stopped by user.")
-        sys.exit(utils.EX_OK)
-    except Exception as e:
-        logging.critical(f"[bold red]:x:  Unexpected error: {type(e).__name__}: {e}", exc_info=True)
-        sys.exit(utils.EX_SOFTWARE)
-
-if __name__ == '__main__':
-    print(utils.get_config())
+        print("[bold]Stopped by user.")
+        sys.exit(EX_OK)
