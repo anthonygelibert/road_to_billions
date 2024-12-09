@@ -12,12 +12,10 @@ import plotly.graph_objects as go
 from binance.spot import Spot as Client
 from rich import print, traceback  # noqa:A004
 
-from utils.version import get_version
 
 
 @click.group(no_args_is_help=True, context_settings={"help_option_names": ["-h", "--help"]})
 @click.option("-v", "--verbose", is_flag=True, default=False, help="Enable verbose mode")
-@click.version_option(get_version())
 def cli(*, verbose: bool) -> None:
     """Tools for datasets."""
     traceback.install(width=200, show_locals=verbose)
