@@ -2,6 +2,7 @@
 
 """Wayne script."""
 
+import os
 import sys
 
 import click
@@ -11,8 +12,6 @@ import plotly.graph_objects as go
 from binance.spot import Spot as Client
 from rich import print, traceback  # noqa:A004
 
-from utils.config import get_config
-from utils.retval import EX_OK
 from utils.version import get_version
 
 
@@ -27,8 +26,7 @@ def cli(*, verbose: bool) -> None:
 @cli.command()
 def btcusdt() -> None:
     """Display BTC2USD curve."""
-    client = Client(get_config().api_key.get_secret_value(), get_config().api_secret.get_secret_value())
-
+    client = Client(os.environ["API_KEY"], os.environ["API_SECRET"])
     column_names = ["Open time", "Open price", "High price", "Low price", "Close price", "Volume", "Kline close time",
                     "Quote asset volume", "Number of trades", "Taker buy base asset volume",
                     "Taker buy quote asset volume", "Ignore"]
@@ -47,4 +45,4 @@ if __name__ == "__main__":
         cli()
     except KeyboardInterrupt:
         print("[bold]Stopped by user.")
-        sys.exit(EX_OK)
+        sys.exit(0)
