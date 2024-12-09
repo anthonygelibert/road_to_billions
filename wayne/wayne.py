@@ -12,6 +12,8 @@ import plotly.graph_objects as go
 from binance.spot import Spot as Client
 from rich import print, traceback  # noqa:A004
 
+assert "API_KEY" in os.environ, "Please add API_KEY environment variable"
+assert "API_SECRET" in os.environ, "Please add API_SECRET environment variable"
 
 
 @click.group(no_args_is_help=True, context_settings={"help_option_names": ["-h", "--help"]})
