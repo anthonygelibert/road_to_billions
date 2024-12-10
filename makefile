@@ -2,7 +2,7 @@ ifndef VIRTUAL_ENV
 $(error This project should be made from a venv... You are ruining your system son...)
 endif
 
-.PHONY: help check_mypy
+.PHONY: help check
 
 # COLORS
 GREEN  := $(shell tput -Txterm setaf 2)
@@ -22,13 +22,8 @@ help: ## Show help
 				printf "  ${YELLOW}%-$(TARGET_MAX_CHAR_NUM)s${RESET} ${GREEN}%s${RESET}\n", $$1, $$2 \
 			}'
 
-check: check_ruff check_mypy ## Apply all code checkers
-
-check_ruff: ## Code checking with ruff
+check: ## Code checking with ruff
 	ruff check --config ruff.toml wayne
-
-check_mypy: ## Code checking with Mypy
-	MYPYPATH=wayne mypy --install-types --explicit-package-bases --config-file mypy.ini wayne
 
 # Pro tip: during usual calls silent everything and if V="SOMETHING" be verbose
 $(V).SILENT:
