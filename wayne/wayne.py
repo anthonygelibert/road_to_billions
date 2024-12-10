@@ -5,7 +5,6 @@
 import os
 import sys
 
-import click
 import pandas as pd
 import plotly.graph_objects as go
 # noinspection PyPackageRequirements
@@ -16,15 +15,7 @@ assert "API_KEY" in os.environ, "Please add API_KEY environment variable"
 assert "API_SECRET" in os.environ, "Please add API_SECRET environment variable"
 
 
-@click.group(no_args_is_help=True, context_settings={"help_option_names": ["-h", "--help"]})
-@click.option("-v", "--verbose", is_flag=True, default=False, help="Enable verbose mode")
-def cli(*, verbose: bool) -> None:
-    """Tools for datasets."""
-    traceback.install(width=200, show_locals=verbose)
-
-
-@cli.command()
-def btcusdt() -> None:
+def print_curve() -> None:
     """Display BTC2USD curve."""
     client = Client(os.environ["API_KEY"], os.environ["API_SECRET"])
     column_names = ["Open time", "Open price", "High price", "Low price", "Close price", "Volume", "Kline close time",
@@ -35,8 +26,9 @@ def btcusdt() -> None:
     kls["Close price"] = pd.to_numeric(kls["Close price"])
     kls["Open price"] = pd.to_numeric(kls["Open price"])
     kls["Open time"] = pd.to_datetime(kls["Open time"], unit="ms")
-    candlestick = go.Candlestick(x=kls["Open time"], open=kls["Open price"], high=kls["High price"],
-                                 low=kls["Low price"], close=kls["Close price"], line={"width": 1})
+    ikls = kls.set_index("Open time")
+    candlestick = go.Candlestick(x=ikls.index, open=ikls["Open price"], high=ikls["High price"], low=ikls["Low price"],
+                                 close=ikls["Close price"], line={"width": 1})
     fig = go.Figure(data=[candlestick])
     fig.update_layout(width=800, height=600, title="BTCUSDT", yaxis_title="Price")
     fig.show()
@@ -44,7 +36,8 @@ def btcusdt() -> None:
 
 if __name__ == "__main__":
     try:
-        cli()
+        traceback.install(width=200, show_locals=True)
+        print_curve()
     except KeyboardInterrupt:
         print("[bold]Stopped by user.")
         sys.exit(0)

@@ -1,9 +1,5 @@
 # To manipulate crypto-currencies
 binance-connector~=3.10
-# To simplify dataclass creation
-pydantic~=2.10
-# To manage the parameters/options/flags.
-click~=8.1
 # To get a better local TUI.
 rich~=13.9
 # To statically check the typing
