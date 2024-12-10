@@ -24,7 +24,7 @@ ignore = ["B024", "D107", "D203", "D212", "FIX002", "G004", "S101", "T201", "TID
 #    CPY: flake8-copyright    — Ignore **EVERYTHING**.
 #    DOC: pydoclint           — Ignore **EVERYTHING**.
 #   I001: isort               — Ignore the import problems… Required until ruff implements all the options of isort for the multilines.
-extend-ignore = ["CPY", "DOC", "I001"]
+extend-ignore = ["CPY", "DOC"]
 
 [lint.per-file-ignores]
 # Ignore F822 (undefined-export) in all “__init__.py” files (due to “preview”).

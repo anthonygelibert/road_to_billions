@@ -7,7 +7,6 @@ import sys
 
 import pandas as pd
 import plotly.graph_objects as go
-# noinspection PyPackageRequirements
 from binance.spot import Spot as Client
 from rich import print, traceback  # noqa:A004
 
