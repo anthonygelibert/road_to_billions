@@ -32,6 +32,8 @@ def btcusdt() -> None:
                     "Taker buy quote asset volume", "Ignore"]
     # noinspection PyArgumentList,PyUnresolvedReferences
     kls = pd.DataFrame(client.ui_klines(symbol="BTCUSDT", interval="1d", limit=1000), columns=column_names)
+    kls["Close price"] = pd.to_numeric(kls["Close price"])
+    kls["Open price"] = pd.to_numeric(kls["Open price"])
     kls["Open time"] = pd.to_datetime(kls["Open time"], unit="ms")
     candlestick = go.Candlestick(x=kls["Open time"], open=kls["Open price"], high=kls["High price"],
                                  low=kls["Low price"], close=kls["Close price"])
