@@ -36,7 +36,7 @@ def btcusdt() -> None:
     kls["Open price"] = pd.to_numeric(kls["Open price"])
     kls["Open time"] = pd.to_datetime(kls["Open time"], unit="ms")
     candlestick = go.Candlestick(x=kls["Open time"], open=kls["Open price"], high=kls["High price"],
-                                 low=kls["Low price"], close=kls["Close price"])
+                                 low=kls["Low price"], close=kls["Close price"], line={"width": 1})
     fig = go.Figure(data=[candlestick])
     fig.update_layout(width=800, height=600, title="BTCUSDT", yaxis_title="Price")
     fig.show()
