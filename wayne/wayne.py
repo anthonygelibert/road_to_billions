@@ -30,7 +30,7 @@ def btcusdt() -> None:
     column_names = ["Open time", "Open price", "High price", "Low price", "Close price", "Volume", "Kline close time",
                     "Quote asset volume", "Number of trades", "Taker buy base asset volume",
                     "Taker buy quote asset volume", "Ignore"]
-    # noinspection PyArgumentList
+    # noinspection PyArgumentList,PyUnresolvedReferences
     kls = pd.DataFrame(client.ui_klines(symbol="BTCUSDT", interval="1d", limit=1000), columns=column_names)
     kls["Open time"] = pd.to_datetime(kls["Open time"], unit="ms")
     candlestick = go.Candlestick(x=kls["Open time"], open=kls["Open price"], high=kls["High price"],
