@@ -6,3 +6,5 @@ binance-connector~=3.10
 pandas~=2.2
 # To display graphs
 plotly~=5.24
+# To ease data analysis
+ta~=0.11
