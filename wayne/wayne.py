@@ -53,16 +53,17 @@ def _simulate_invest_strategy(data: pd.DataFrame, *, capital_start: float = 1000
                               trailing_stop_pct: float = .001) -> None:
     """Simulate an invest strategy."""
     capital = capital_start
+    capital_curve = []
+
     peak = capital
     positions = 0.
     drawdown = 0.
-    entry_price = 0.
-    capital_curve = []
+
     stop_loss = 0.
     trailing_stop = 0.
 
     for _, row in data.iterrows():
-        if positions == 0:
+        if positions == 0.:
             if row["Buy"]:
                 entry_price = row["Close price"]
                 positions = capital / entry_price
@@ -79,16 +80,12 @@ def _simulate_invest_strategy(data: pd.DataFrame, *, capital_start: float = 1000
             capital = positions * row["Close price"]
             positions = 0.
 
-        # Calcul du drawdown
-        current_value = positions * row["Close price"] if positions > 0. else capital
-        if current_value > peak:
-            peak = current_value
-        else:
-            current_drawdown = (peak - current_value) / peak
-            drawdown = max(current_drawdown, drawdown)
-        capital_curve.append(current_value)
+        current_capital = capital if positions == 0. else positions * row["Close price"]
+        peak = max(current_capital, peak)
+        current_drawdown = (peak - current_capital) / peak
+        drawdown = max(current_drawdown, drawdown)
+        capital_curve.append(current_capital)
 
-    # Calcul du capital final et du profit
     capital_end = capital if positions == 0. else positions * data.iloc[-1]["Close price"]
     profit = capital_end - capital_start
     profit_percentage = (profit / capital_start) * 100.
