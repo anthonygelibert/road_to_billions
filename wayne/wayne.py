@@ -56,6 +56,8 @@ def _simulate_invest_strategy(data: pd.DataFrame, *, capital_start: float = 1000
     drawdown = 0.
     entry_price = 0.
     capital_curve = []
+    stop_loss = 0.
+    trailing_stop = 0.
 
     for _, row in data.iterrows():
         # Vérifier et mettre à jour le trailing stop
