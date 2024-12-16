@@ -50,7 +50,7 @@ def _generate_buy_sell_orders(data: pd.DataFrame) -> pd.DataFrame:
 def _simulate_invest_strategy(data: pd.DataFrame, *, capital_start: float = 1000., stop_loss_pct: float = .032,
                               trailing_stop_pct: float = .001) -> pd.DataFrame:
     """Simulate an invest strategy."""
-    capital = 1000.0
+    capital = capital_start
     peak = capital
     positions = 0.
     drawdown = 0.
