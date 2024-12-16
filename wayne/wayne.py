@@ -66,8 +66,8 @@ def _simulate_invest_strategy(data: pd.DataFrame, *, capital_start: float = 1000
 
             if row["Low price"] < stop_loss:
                 capital = positions * stop_loss
-                positions = 0
-                entry_price = 0
+                positions = 0.
+                entry_price = 0.
                 capital_curve.append(capital)
                 continue
 
