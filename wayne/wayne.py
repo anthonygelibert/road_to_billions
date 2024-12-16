@@ -90,7 +90,7 @@ def _simulate_invest_strategy(data: pd.DataFrame, *, capital_start: float = 1000
         else:
             current_drawdown = (peak - current_value) / peak
             drawdown = max(current_drawdown, drawdown)
-        capital_curve.append(capital)
+        capital_curve.append(current_value)
 
     # Calcul du capital final et du profit
     capital_end = capital if positions == 0 else positions * data.iloc[-1]["Close price"]
