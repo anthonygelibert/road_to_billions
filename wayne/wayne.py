@@ -10,6 +10,8 @@ import plotly.graph_objects as go
 from binance.spot import Spot as Client
 from plotly.subplots import make_subplots
 from rich import print, traceback  # noqa:A004
+from rich.console import Console
+from rich.table import Table
 from ta.momentum import RSIIndicator
 from ta.trend import EMAIndicator
 
@@ -91,14 +93,15 @@ def _simulate_invest_strategy(data: pd.DataFrame, *, capital_start: float = 1000
     profit = capital_end - capital_start
     profit_percentage = (profit / capital_start) * 100.
 
-    # Rapport de résultats
-    print("Rapport de Backtest")
-    print(f"Capital de départ: {capital_start:.2f} USDT")
-    capital_structure = "liquidity" if positions == 0. else f"{positions} x {data.iloc[-1]['Close price']}"
-    print(f"Capital de fin: {capital_end:.2f} USDT ({capital_structure})")
-    print(f"Profit: {profit:.2f} USDT")
-    print(f"Rentabilité: {profit_percentage:.2f}%")
-    print(f"Drawdown maximal: {drawdown * 100.:.2f}%")
+    capital_structure = "liquidity" if positions == 0. else f"{positions:.2f} x {data.iloc[-1]['Close price']}"
+    table = Table(title="Report", title_style="bold red", show_header=False)
+    table.add_column(justify="right", style="bold cyan")
+    table.add_row("Capital initial", f"{capital_start:.2f} USDT")
+    table.add_row("Capital final", f"{capital_end:.2f} USDT ({capital_structure})")
+    table.add_row("Profit", f"{profit:.2f} USDT")
+    table.add_row("Rentabilité", f"{profit_percentage:.2f}%")
+    table.add_row("Drawdown maximal", f"{drawdown * 100.:.2f}%")
+    Console().print(table)
 
     data["Capital"] = capital_curve
     return data
