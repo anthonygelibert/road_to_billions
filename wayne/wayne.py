@@ -65,11 +65,11 @@ def _simulate_invest_strategy(data: pd.DataFrame, *, capital_start: float = 1000
                 entry_price = row["Close price"]
                 positions = capital / entry_price
                 capital = 0.
-                stop_loss = entry_price * (1 - stop_loss_pct)
-                trailing_stop = entry_price * (1 + trailing_stop_pct)
+                stop_loss = entry_price * (1. - stop_loss_pct)
+                trailing_stop = entry_price * (1. + trailing_stop_pct)
         elif row["High price"] > trailing_stop:
             entry_price = row["High price"]
-            stop_loss = entry_price * (1 - stop_loss_pct)
+            stop_loss = entry_price * (1. - stop_loss_pct)
         elif row["Low price"] < stop_loss:
             capital = positions * stop_loss
             positions = 0.
@@ -78,7 +78,7 @@ def _simulate_invest_strategy(data: pd.DataFrame, *, capital_start: float = 1000
             positions = 0.
 
         # Calcul du drawdown
-        current_value = positions * row["Close price"] if positions > 0 else capital
+        current_value = positions * row["Close price"] if positions > 0. else capital
         if current_value > peak:
             peak = current_value
         else:
@@ -87,18 +87,18 @@ def _simulate_invest_strategy(data: pd.DataFrame, *, capital_start: float = 1000
         capital_curve.append(current_value)
 
     # Calcul du capital final et du profit
-    capital_end = capital if positions == 0 else positions * data.iloc[-1]["Close price"]
+    capital_end = capital if positions == 0. else positions * data.iloc[-1]["Close price"]
     profit = capital_end - capital_start
-    profit_percentage = (profit / capital_start) * 100
+    profit_percentage = (profit / capital_start) * 100.
 
     # Rapport de résultats
     print("Rapport de Backtest")
     print(f"Capital de départ: {capital_start:.2f} USDT")
-    capital_structure = "liquidity" if positions == 0 else f"{positions} x {data.iloc[-1]['Close price']}"
+    capital_structure = "liquidity" if positions == 0. else f"{positions} x {data.iloc[-1]['Close price']}"
     print(f"Capital de fin: {capital_end:.2f} USDT ({capital_structure})")
     print(f"Profit: {profit:.2f} USDT")
     print(f"Rentabilité: {profit_percentage:.2f}%")
-    print(f"Drawdown maximal: {drawdown * 100:.2f}%")
+    print(f"Drawdown maximal: {drawdown * 100.:.2f}%")
 
     data["Capital"] = capital_curve
     return data
