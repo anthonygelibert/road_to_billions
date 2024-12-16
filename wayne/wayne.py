@@ -53,6 +53,7 @@ def print_curve() -> None:
 
     fig = make_subplots(rows=3, shared_xaxes=True,
                         subplot_titles=("BTC 2 USD + EMA 25", "RSI 3", "Buy (green)/Sell (red) orders"))
+    fig.update_xaxes(rangeslider_visible=False)
     fig.add_trace(candlestick, 1, 1)
     fig.add_trace(ema25, 1, 1)
     fig.add_trace(rsi3, 2, 1)
