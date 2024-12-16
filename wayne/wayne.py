@@ -94,7 +94,8 @@ def _simulate_invest_strategy(data: pd.DataFrame, *, capital_start: float = 1000
     # Rapport de résultats
     print("Rapport de Backtest")
     print(f"Capital de départ: {capital_start:.2f} USDT")
-    print(f"Capital de fin: {capital_end:.2f} USDT")
+    capital_structure = "liquidity" if positions == 0 else f"{positions} x {data.iloc[-1]['Close price']}"
+    print(f"Capital de fin: {capital_end:.2f} USDT ({capital_structure})")
     print(f"Profit: {profit:.2f} USDT")
     print(f"Rentabilité: {profit_percentage:.2f}%")
     print(f"Drawdown maximal: {drawdown * 100:.2f}%")
