@@ -67,20 +67,15 @@ def _simulate_invest_strategy(data: pd.DataFrame, *, capital_start: float = 1000
                 capital = 0.
                 stop_loss = entry_price * (1 - stop_loss_pct)
                 trailing_stop = entry_price * (1 + trailing_stop_pct)
-        else:
-            if row["High price"] > trailing_stop:
-                entry_price = row["High price"]
-                stop_loss = entry_price * (1 - stop_loss_pct)
-
-            if row["Low price"] < stop_loss:
-                capital = positions * stop_loss
-                positions = 0.
-                capital_curve.append(capital)
-                continue
-
-            if row["Sell"]:
-                capital = positions * row["Close price"]
-                positions = 0.
+        elif row["High price"] > trailing_stop:
+            entry_price = row["High price"]
+            stop_loss = entry_price * (1 - stop_loss_pct)
+        elif row["Low price"] < stop_loss:
+            capital = positions * stop_loss
+            positions = 0.
+        elif row["Sell"]:
+            capital = positions * row["Close price"]
+            positions = 0.
 
         # Calcul du drawdown
         current_value = positions * row["Close price"] if positions > 0 else capital
