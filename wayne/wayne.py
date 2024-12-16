@@ -50,7 +50,7 @@ def _generate_buy_sell_orders(data: pd.DataFrame) -> pd.DataFrame:
 
 
 def _simulate_invest_strategy(data: pd.DataFrame, *, capital_start: float = 1000., stop_loss_pct: float = .032,
-                              trailing_stop_pct: float = .001) -> pd.DataFrame:
+                              trailing_stop_pct: float = .001) -> None:
     """Simulate an invest strategy."""
     capital = capital_start
     peak = capital
@@ -104,7 +104,6 @@ def _simulate_invest_strategy(data: pd.DataFrame, *, capital_start: float = 1000
     Console().print(table)
 
     data["Capital"] = capital_curve
-    return data
 
 
 def _print_the_curves(data: pd.DataFrame) -> None:
@@ -135,8 +134,8 @@ if __name__ == "__main__":
     try:
         traceback.install(width=200, show_locals=True)
         raw_data = _generate_buy_sell_orders(_get_data("BTCUSDT"))
-        augmented_data = _simulate_invest_strategy(raw_data)
-        _print_the_curves(augmented_data)
+        _simulate_invest_strategy(raw_data)
+        _print_the_curves(raw_data)
     except KeyboardInterrupt:
         print("[bold]Stopped by user.")
         sys.exit(0)
