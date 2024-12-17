@@ -49,9 +49,10 @@ def _generate_buy_sell_orders(data: pd.DataFrame) -> pd.DataFrame:
     return data
 
 
-def _simulate_invest_strategy(data: pd.DataFrame, *, sell_only_on_big_falls: bool = True, capital_start: float = 1000.,
-                              stop_loss_pct: float = .032, trailing_stop_pct: float = .001) -> None:
-    """Simulate an invest strategy."""
+def _trailing_stop_invest_strategy(data: pd.DataFrame, *, sell_only_on_big_falls: bool = True,
+                                   capital_start: float = 1000., stop_loss_pct: float = .032,
+                                   trailing_stop_pct: float = .001) -> None:
+    """Simulate a “trailing stop” invest strategy."""
     capital = capital_start
     capital_curve = []
 
@@ -93,7 +94,8 @@ def _simulate_invest_strategy(data: pd.DataFrame, *, sell_only_on_big_falls: boo
     profit_percentage = (profit / capital_start) * 100.
 
     capital_structure = "liquidity" if positions == 0. else f"{positions:.2f} x {data.iloc[-1]['Close price']}"
-    table = Table(title="Report", title_style="bold red", show_header=False)
+    table = Table(title=f"Report “Trailing Stop” (secure={not sell_only_on_big_falls})", title_style="bold red",
+                  show_header=False)
     table.add_column(justify="right", style="bold cyan")
     table.add_row("Capital initial", f"{capital_start:.2f} USDT")
     table.add_row("Capital final", f"{capital_end:.2f} USDT ({capital_structure})")
@@ -125,7 +127,7 @@ if __name__ == "__main__":
     try:
         traceback.install(width=200, show_locals=True)
         raw_data = _generate_buy_sell_orders(_get_data("BTCUSDT"))
-        _simulate_invest_strategy(raw_data)
+        _trailing_stop_invest_strategy(raw_data)
         _print_the_curves(raw_data)
     except KeyboardInterrupt:
         print("[bold]Stopped by user.")
