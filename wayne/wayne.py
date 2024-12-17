@@ -103,7 +103,8 @@ def _trailing_stop_invest_strategy(data: pd.DataFrame, *, secure: bool = False, 
     profit_percentage = (profit / capital_start) * 100.
 
     capital_structure = "liquidity" if positions == 0. else f"{positions:.2f} x {data.iloc[-1]['Close price']}"
-    table = Table(title=f"Report “Trailing Stop” (secure={secure})", title_style="bold red", show_header=False)
+    table = Table(title=f"Report “Trailing Stop” (secure={secure}) on BTCUSDT", title_style="bold red",
+                  show_header=False)
     table.add_column(justify="right", style="bold cyan")
     table.add_row("Capital initial", f"{capital_start:.2f} USDT")
     table.add_row("Capital final", f"{capital_end:.2f} USDT ({capital_structure})")
