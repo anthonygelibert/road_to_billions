@@ -49,8 +49,8 @@ def _generate_buy_sell_orders(data: pd.DataFrame) -> pd.DataFrame:
     return data
 
 
-def _simulate_invest_strategy(data: pd.DataFrame, *, capital_start: float = 1000., stop_loss_pct: float = .032,
-                              trailing_stop_pct: float = .001) -> None:
+def _simulate_invest_strategy(data: pd.DataFrame, *, sell_only_on_big_falls: bool = True, capital_start: float = 1000.,
+                              stop_loss_pct: float = .032, trailing_stop_pct: float = .001) -> None:
     """Simulate an invest strategy."""
     capital = capital_start
     capital_curve = []
@@ -73,6 +73,8 @@ def _simulate_invest_strategy(data: pd.DataFrame, *, capital_start: float = 1000
         elif row["High price"] > trailing_stop:
             entry_price = row["High price"]
             stop_loss = entry_price * (1. - stop_loss_pct)
+            if not sell_only_on_big_falls:
+                trailing_stop = entry_price * (1. + trailing_stop_pct)
         elif row["Low price"] < stop_loss:
             capital = positions * stop_loss
             positions = 0.
