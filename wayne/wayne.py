@@ -108,20 +108,12 @@ def _print_the_curves(data: pd.DataFrame) -> None:
     candlestick = go.Candlestick(x=data.index, open=data["Open price"], high=data["High price"], low=data["Low price"],
                                  close=data["Close price"], name="Stock")
     ema25 = go.Scatter(x=data.index, y=data["EMA25"], line={"color": "blue"}, mode="lines", name="EMA25")
-    rsi3 = go.Scatter(x=data.index, y=data["RSI3"], mode="lines", name="RSI3")
-    buy = go.Scatter(x=data.index, y=data["Buy"], mode="lines", line={"color": "green"}, name="Buy")
-    sell = go.Scatter(x=data.index, y=data["Sell"], mode="lines", line={"color": "red"}, name="Sell")
     capital = go.Scatter(x=data.index, y=data["Capital"], mode="lines", name="Capital")
 
-    fig = make_subplots(rows=4, shared_xaxes=True,
-                        subplot_titles=("BTC 2 USD + EMA 25", "RSI 3", "Buy/Sell orders", "Capital"))
-    fig.update_xaxes(rangeslider_visible=False)
+    fig = make_subplots(rows=2, shared_xaxes=True, subplot_titles=("BTC 2 USD + EMA 25", "Capital"))
     fig.add_trace(candlestick, 1, 1)
     fig.add_trace(ema25, 1, 1)
-    fig.add_trace(rsi3, 2, 1)
-    fig.add_trace(buy, 3, 1)
-    fig.add_trace(sell, 3, 1)
-    fig.add_trace(capital, 4, 1)
+    fig.add_trace(capital, 2, 1)
 
     fig.update_layout(width=800, height=600)
     fig.show()
