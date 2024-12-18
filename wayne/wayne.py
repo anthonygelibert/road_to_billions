@@ -4,11 +4,13 @@
 
 import os
 import sys
+from typing import Annotated
 
 import pandas as pd
 import plotly.graph_objects as go
 from binance.spot import Spot as Client
 from plotly.subplots import make_subplots
+from pydantic import BaseModel, confloat, NonNegativeFloat, PositiveFloat
 from rich import print, traceback  # noqa:A004
 from rich.console import Console
 from rich.table import Table
@@ -17,6 +19,47 @@ from ta.trend import EMAIndicator
 
 assert "API_KEY" in os.environ, "Please add API_KEY environment variable"
 assert "API_SECRET" in os.environ, "Please add API_SECRET environment variable"
+
+
+class InvestResult(BaseModel):
+    """Result of an investment strategy."""
+
+    capital_start: PositiveFloat
+    """Capital start."""
+    capital_end: float
+    """Capital end."""
+    positions_end: NonNegativeFloat
+    """Positions at end."""
+    drawdown: Annotated[float, confloat(ge=0., le=1.)]
+    """Drawdown."""
+    capital_curve: list[float]
+    """Capital curve."""
+
+    @property
+    def profit(self) -> float:
+        """Profit on the period."""
+        return self.capital_end - self.capital_start
+
+    @property
+    def profit_percentage(self) -> float:
+        """Profit (percentage) on the period."""
+        return (self.profit / self.capital_start) * 100.
+
+    @property
+    def max(self) -> float:
+        """Maximum value of the capital on the period."""
+        return max(self.capital_curve)
+
+    @property
+    def min(self) -> float:
+        """Minimal value of the capital on the period."""
+        return min(self.capital_curve)
+
+    @property
+    def capital_structure(self) -> str:
+        """Structure of the capital at the end of the period."""
+        return "liquidity" if self.positions_end == 0. else (f"{self.positions_end:.2f} x "
+                                                             f"{self.capital_end / self.positions_end:.2f}")
 
 
 def _get_data(symbol: str, *, interval: str = "1d", limit: int = 1000) -> pd.DataFrame:
@@ -48,19 +91,35 @@ def _generate_buy_sell_orders(data: pd.DataFrame) -> pd.DataFrame:
 
 def _trailing_stop_invest_strategies(data: pd.DataFrame, *, capital_start: float = 1000., stop_loss_pct: float = .032,
                                      trailing_stop_pct: float = .001) -> None:
-    _trailing_stop_invest_strategy(data, stop_loss_pct=stop_loss_pct, capital_start=capital_start,
-                                   trailing_stop_pct=trailing_stop_pct)
-    _print_the_curves(data)
-    _trailing_stop_invest_strategy(data, secure=True, stop_loss_pct=stop_loss_pct, capital_start=capital_start,
-                                   trailing_stop_pct=trailing_stop_pct)
-    _print_the_curves(data)
+    not_secure = _trailing_stop_invest_strategy(data, stop_loss_pct=stop_loss_pct, capital_start=capital_start,
+                                                trailing_stop_pct=trailing_stop_pct)
+    secure = _trailing_stop_invest_strategy(data, secure=True, stop_loss_pct=stop_loss_pct, capital_start=capital_start,
+                                            trailing_stop_pct=trailing_stop_pct)
+
+    table = Table(title="Report “Trailing Stop” on BTCUSDT", title_style="bold red")
+    table.add_column(justify="right", style="bold cyan")
+    table.add_column("Secure == False")
+    table.add_column("Secure == True")
+    table.add_row("Capital initial", f"{not_secure.capital_start:.2f} USDT", f"{secure.capital_start:.2f} USDT")
+    table.add_row("Capital final", f"{not_secure.capital_end:.2f} USDT ({not_secure.capital_structure})",
+                  f"{secure.capital_end:.2f} USDT ({secure.capital_structure})")
+    table.add_row("Profit", f"{not_secure.profit:.2f} USDT", f"{secure.profit:.2f} USDT")
+    table.add_row("Rentabilité", f"{not_secure.profit_percentage:.2f}%", f"{secure.profit_percentage:.2f}%")
+    table.add_row("Drawdown maximal", f"{not_secure.drawdown * 100.:.2f}%", f"{secure.drawdown * 100.:.2f}%")
+    table.add_row("Max", f"{not_secure.max:.2f} USDT", f"{secure.max:.2f} USDT")
+    table.add_row("Min", f"{not_secure.min:.2f} USDT", f"{secure.min:.2f} USDT")
+
+    Console().print(table)
+
+    data["Capital Not Secure"] = not_secure.capital_curve
+    data["Capital Secure"] = secure.capital_curve
 
 
 def _trailing_stop_invest_strategy(data: pd.DataFrame, *, secure: bool = False, capital_start: float = 1000.,
-                                   stop_loss_pct: float = .032, trailing_stop_pct: float = .001) -> None:
+                                   stop_loss_pct: float = .032, trailing_stop_pct: float = .001) -> InvestResult:
     """Simulate a “trailing stop” invest strategy."""
-    capital = capital_start
-    capital_curve = []
+    current_capital = capital = capital_start
+    capital_curve: list[float] = []
 
     peak = capital
     positions = 0.
@@ -85,9 +144,6 @@ def _trailing_stop_invest_strategy(data: pd.DataFrame, *, secure: bool = False, 
         elif row["Low price"] < stop_loss:
             capital = positions * stop_loss
             positions = 0.
-        elif row["Sell"]:
-            capital = positions * row["Close price"]
-            positions = 0.
 
         current_capital = capital if positions == 0. else positions * row["Close price"]
         peak = max(current_capital, peak)
@@ -95,22 +151,8 @@ def _trailing_stop_invest_strategy(data: pd.DataFrame, *, secure: bool = False, 
         drawdown = max(current_drawdown, drawdown)
         capital_curve.append(current_capital)
 
-    capital_end = capital if positions == 0. else positions * data.iloc[-1]["Close price"]
-    profit = capital_end - capital_start
-    profit_percentage = (profit / capital_start) * 100.
-
-    capital_structure = "liquidity" if positions == 0. else f"{positions:.2f} x {data.iloc[-1]['Close price']}"
-    table = Table(title=f"Report “Trailing Stop” (secure={secure}) on BTCUSDT", title_style="bold red",
-                  show_header=False)
-    table.add_column(justify="right", style="bold cyan")
-    table.add_row("Capital initial", f"{capital_start:.2f} USDT")
-    table.add_row("Capital final", f"{capital_end:.2f} USDT ({capital_structure})")
-    table.add_row("Profit", f"{profit:.2f} USDT")
-    table.add_row("Rentabilité", f"{profit_percentage:.2f}%")
-    table.add_row("Drawdown maximal", f"{drawdown * 100.:.2f}%")
-    Console().print(table)
-
-    data["Capital"] = capital_curve
+    return InvestResult(capital_start=capital_start, capital_end=current_capital, drawdown=drawdown,
+                        capital_curve=capital_curve, positions_end=positions)
 
 
 def _print_the_curves(data: pd.DataFrame) -> None:
@@ -118,12 +160,17 @@ def _print_the_curves(data: pd.DataFrame) -> None:
     candlestick = go.Candlestick(x=data.index, open=data["Open price"], high=data["High price"], low=data["Low price"],
                                  close=data["Close price"], name="Stock")
     ema25 = go.Scatter(x=data.index, y=data["EMA25"], line={"color": "blue"}, mode="lines", name="EMA25")
-    capital = go.Scatter(x=data.index, y=data["Capital"], mode="lines", name="Capital")
+    capital_not_secure = go.Scatter(x=data.index, y=data["Capital Not Secure"], mode="lines",
+                                    name="Capital (Secure=False)")
+    capital_secure = go.Scatter(x=data.index, y=data["Capital Secure"], mode="lines", name="Capital (Secure=True)")
 
-    fig = make_subplots(rows=2, shared_xaxes=True, subplot_titles=("BTC 2 USD + EMA 25", "Capital"))
+    fig = make_subplots(rows=3, shared_xaxes=True,
+                        subplot_titles=("BTC 2 USD + EMA 25", "Capital (Secure=False)", "Capital (Secure=True)"))
     fig.add_trace(candlestick, 1, 1)
+    fig.update_xaxes(rangeslider_visible=False)
     fig.add_trace(ema25, 1, 1)
-    fig.add_trace(capital, 2, 1)
+    fig.add_trace(capital_not_secure, 2, 1)
+    fig.add_trace(capital_secure, 3, 1)
 
     fig.update_layout(width=800, height=600)
     fig.show()
@@ -134,6 +181,7 @@ if __name__ == "__main__":
         traceback.install(width=200, show_locals=True)
         raw_data = _generate_buy_sell_orders(_get_data("BTCUSDT"))
         _trailing_stop_invest_strategies(raw_data)
+        _print_the_curves(raw_data)
     except KeyboardInterrupt:
         print("[bold]Stopped by user.")
         sys.exit(0)
