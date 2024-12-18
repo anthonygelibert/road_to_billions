@@ -10,3 +10,5 @@ plotly~=5.24
 ta~=0.11
 # To create datasclasses
 pydantic~=2.10
+# To manage the parameters/options/flags.
+click~=8.1
