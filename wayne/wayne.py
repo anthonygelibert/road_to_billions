@@ -5,8 +5,8 @@
 from __future__ import annotations
 
 import os
-import sys
 
+import click
 import pandas as pd
 import plotly.graph_objects as go
 from binance.spot import Spot as Client
@@ -137,12 +137,20 @@ def _print_the_curves(data: pd.DataFrame) -> None:
     fig.show()
 
 
+@click.command()
+@click.option("--symbol", default="BTCUSDT", help="Symbol to analyze")
+@click.option("--curves", default=False, is_flag=True, help="Display the curves")
+def wayne(symbol: str, *, curves: bool) -> None:
+    """Wayne."""
+    traceback.install(width=200, show_locals=True)
+    raw_data = _generate_buy_sell_orders(_get_data(symbol))
+    _trailing_stop_invest_strategies(raw_data)
+    if curves:
+        _print_the_curves(raw_data)
+
+
 if __name__ == "__main__":
     try:
-        traceback.install(width=200, show_locals=True)
-        raw_data = _generate_buy_sell_orders(_get_data("BTCUSDT"))
-        _trailing_stop_invest_strategies(raw_data)
-        _print_the_curves(raw_data)
+        wayne()
     except KeyboardInterrupt:
         print("[bold]Stopped by user.")
-        sys.exit(0)
