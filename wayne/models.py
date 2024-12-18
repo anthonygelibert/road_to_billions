@@ -2,9 +2,17 @@
 
 from __future__ import annotations
 
-from typing import Annotated
+from typing import Annotated, TypedDict
 
 from pydantic import BaseModel, confloat, NonNegativeFloat, PositiveFloat
+
+
+class TrailingStopParameters(TypedDict):
+    """Parameters for a trailing stop strategy."""
+
+    secure: bool
+    stop_loss_pct: float
+    trailing_stop_pct: float
 
 
 class InvestResult(BaseModel):

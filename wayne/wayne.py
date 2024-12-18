@@ -17,7 +17,7 @@ from rich.table import Table
 from ta.momentum import RSIIndicator
 from ta.trend import EMAIndicator
 
-from models import InvestResult
+from strategy import TrailingStopStrategy
 
 assert "API_KEY" in os.environ, "Please add API_KEY environment variable"
 assert "API_SECRET" in os.environ, "Please add API_SECRET environment variable"
@@ -50,12 +50,10 @@ def _generate_buy_sell_orders(data: pd.DataFrame) -> pd.DataFrame:
     return data
 
 
-def _trailing_stop_invest_strategies(data: pd.DataFrame, *, capital_start: float = 1000., stop_loss_pct: float = .032,
-                                     trailing_stop_pct: float = .001) -> None:
-    not_secure = _trailing_stop_invest_strategy(data, stop_loss_pct=stop_loss_pct, capital_start=capital_start,
-                                                trailing_stop_pct=trailing_stop_pct)
-    secure = _trailing_stop_invest_strategy(data, secure=True, stop_loss_pct=stop_loss_pct, capital_start=capital_start,
-                                            trailing_stop_pct=trailing_stop_pct)
+def _trailing_stop_invest_strategies(data: pd.DataFrame, *, capital_start: float = 1000.) -> None:
+    tss = TrailingStopStrategy(data, capital=capital_start)
+    not_secure = tss.apply(secure=False, stop_loss_pct=.032, trailing_stop_pct=.001)
+    secure = tss.apply(secure=True, stop_loss_pct=.032, trailing_stop_pct=.001)
 
     table = Table(title="Report “Trailing Stop” on BTCUSDT", title_style="bold red")
     table.add_column(justify="right", style="bold cyan")
@@ -74,46 +72,6 @@ def _trailing_stop_invest_strategies(data: pd.DataFrame, *, capital_start: float
 
     data["Capital Not Secure"] = not_secure.capital_curve
     data["Capital Secure"] = secure.capital_curve
-
-
-def _trailing_stop_invest_strategy(data: pd.DataFrame, *, secure: bool = False, capital_start: float = 1000.,
-                                   stop_loss_pct: float = .032, trailing_stop_pct: float = .001) -> InvestResult:
-    """Simulate a “trailing stop” invest strategy."""
-    current_capital = capital = capital_start
-    capital_curve: list[float] = []
-
-    peak = capital
-    positions = 0.
-    drawdown = 0.
-
-    stop_loss = 0.
-    trailing_stop = 0.
-
-    for _, row in data.iterrows():
-        if positions == 0.:
-            if row["Buy"]:
-                entry_price = row["Close price"]
-                positions = capital / entry_price
-                capital = 0.
-                stop_loss = entry_price * (1. - stop_loss_pct)
-                trailing_stop = entry_price * (1. + trailing_stop_pct)
-        elif row["High price"] > trailing_stop:
-            entry_price = row["High price"]
-            stop_loss = entry_price * (1. - stop_loss_pct)
-            if secure:
-                trailing_stop = entry_price * (1. + trailing_stop_pct)
-        elif row["Low price"] < stop_loss:
-            capital = positions * stop_loss
-            positions = 0.
-
-        current_capital = capital if positions == 0. else positions * row["Close price"]
-        peak = max(current_capital, peak)
-        current_drawdown = (peak - current_capital) / peak
-        drawdown = max(current_drawdown, drawdown)
-        capital_curve.append(current_capital)
-
-    return InvestResult(capital_start=capital_start, capital_end=current_capital, drawdown=drawdown,
-                        capital_curve=capital_curve, positions_end=positions)
 
 
 def _print_the_curves(data: pd.DataFrame) -> None:
