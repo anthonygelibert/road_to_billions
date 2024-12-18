@@ -4,8 +4,37 @@ from abc import ABC, abstractmethod
 from typing import Any, override, Unpack
 
 import pandas as pd
+from ta.momentum import RSIIndicator
+from ta.trend import EMAIndicator
 
-from models import InvestResult, TrailingStopParameters
+from models import EMARSIBuyOrderGeneratorParameters, InvestResult, TrailingStopParameters
+
+
+class BuyOrderGenerator(ABC):
+    """Abstract buy order generator."""
+
+    def __init__(self, data: pd.DataFrame) -> None:
+        self._data = data
+
+    @abstractmethod
+    def generate(self, **kwargs: dict[str, Any]) -> pd.DataFrame:
+        """Generate buy orders."""
+
+
+class EMARSIBuyOrderGenerator(BuyOrderGenerator):
+    """Buy order generator based on the EMA and the RSI."""
+
+    @override
+    def generate(self, **kwargs: Unpack[EMARSIBuyOrderGeneratorParameters]) -> pd.DataFrame:
+        """Generate “buy” orders using an EMA and the RSI."""
+        new_data = self._data.copy()
+        # Exponential Moving Average (EMA) over the close price.
+        new_data["EMA"] = EMAIndicator(close=new_data["Close price"], window=kwargs["ema_window"]).ema_indicator()
+        # Relative Strength Index (RSI) over the close price: https://www.investopedia.com/terms/r/rsi.asp.
+        new_data["RSI"] = RSIIndicator(close=new_data["Close price"], window=kwargs["rsi_window"]).rsi()
+        # Took these values from a trading experimentation code:
+        new_data["Buy"] = (new_data["Close price"] > new_data["EMA"]) & (new_data["RSI"] > kwargs["rsi_threshold"])
+        return new_data
 
 
 class Strategy(ABC):

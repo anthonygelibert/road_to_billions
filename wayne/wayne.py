@@ -14,10 +14,8 @@ from plotly.subplots import make_subplots
 from rich import print, traceback  # noqa:A004
 from rich.console import Console
 from rich.table import Table
-from ta.momentum import RSIIndicator
-from ta.trend import EMAIndicator
 
-from strategy import TrailingStopStrategy
+from strategy import EMARSIBuyOrderGenerator, TrailingStopStrategy
 
 assert "API_KEY" in os.environ, "Please add API_KEY environment variable"
 assert "API_SECRET" in os.environ, "Please add API_SECRET environment variable"
@@ -37,17 +35,6 @@ def _get_data(symbol: str, *, interval: str = "1d", limit: int = 1000) -> pd.Dat
     kls["Low price"] = pd.to_numeric(kls["Low price"])
     kls["Open time"] = pd.to_datetime(kls["Open time"], unit="ms")
     return kls.set_index("Open time")
-
-
-def _generate_buy_sell_orders(data: pd.DataFrame) -> pd.DataFrame:
-    """Generate “buy” and “sell” orders."""
-    # Exponential Moving Average (EMA) over the close price.
-    data["EMA25"] = EMAIndicator(close=data["Close price"], window=25).ema_indicator()
-    # Relative Strength Index (RSI) over the close price: https://www.investopedia.com/terms/r/rsi.asp.
-    data["RSI3"] = RSIIndicator(close=data["Close price"], window=3).rsi()
-    # Took these values from a trading experimentation code:
-    data["Buy"] = (data["Close price"] > data["EMA25"]) & (data["RSI3"] > 82)
-    return data
 
 
 def _trailing_stop_invest_strategies(data: pd.DataFrame, *, capital_start: float = 1000.) -> None:
@@ -101,10 +88,12 @@ def _print_the_curves(data: pd.DataFrame) -> None:
 def wayne(symbol: str, *, curves: bool) -> None:
     """Wayne."""
     traceback.install(width=200, show_locals=True)
-    raw_data = _generate_buy_sell_orders(_get_data(symbol))
-    _trailing_stop_invest_strategies(raw_data)
+    raw_data = _get_data(symbol)
+    order_generator = EMARSIBuyOrderGenerator(raw_data)
+    completed_data = order_generator.generate(ema_window=25, rsi_window=14, rsi_threshold=70)
+    _trailing_stop_invest_strategies(completed_data)
     if curves:
-        _print_the_curves(raw_data)
+        _print_the_curves(completed_data)
 
 
 if __name__ == "__main__":

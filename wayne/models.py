@@ -6,13 +6,23 @@ from typing import Annotated, TypedDict
 
 from pydantic import BaseModel, confloat, NonNegativeFloat, PositiveFloat
 
+type Between0And1 = Annotated[float, confloat(ge=0., le=1.)]
+
 
 class TrailingStopParameters(TypedDict):
     """Parameters for a trailing stop strategy."""
 
     secure: bool
-    stop_loss_pct: float
-    trailing_stop_pct: float
+    stop_loss_pct: Between0And1
+    trailing_stop_pct: Between0And1
+
+
+class EMARSIBuyOrderGeneratorParameters(TypedDict):
+    """Parameters for a EMA RSI buy order generator strategy."""
+
+    ema_window: int
+    rsi_window: int
+    rsi_threshold: float
 
 
 class InvestResult(BaseModel):
@@ -24,7 +34,7 @@ class InvestResult(BaseModel):
     """Capital end."""
     positions_end: NonNegativeFloat
     """Positions at end."""
-    drawdown: Annotated[float, confloat(ge=0., le=1.)]
+    drawdown: Between0And1
     """Drawdown."""
     capital_curve: list[float]
     """Capital curve."""
