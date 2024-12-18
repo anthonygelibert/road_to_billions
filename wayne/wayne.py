@@ -38,14 +38,11 @@ def _get_data(symbol: str, *, interval: str = "1d", limit: int = 1000) -> pd.Dat
 def _generate_buy_sell_orders(data: pd.DataFrame) -> pd.DataFrame:
     """Generate “buy” and “sell” orders."""
     # Exponential Moving Average (EMA) over the close price.
-    ema_indicator = EMAIndicator(close=data["Close price"], window=25)
-    data["EMA25"] = ema_indicator.ema_indicator()
+    data["EMA25"] = EMAIndicator(close=data["Close price"], window=25).ema_indicator()
     # Relative Strength Index (RSI) over the close price: https://www.investopedia.com/terms/r/rsi.asp.
-    rsi_indicator = RSIIndicator(close=data["Close price"], window=3)
-    data["RSI3"] = rsi_indicator.rsi()
+    data["RSI3"] = RSIIndicator(close=data["Close price"], window=3).rsi()
     # Took these values from a trading experimentation code:
     data["Buy"] = (data["Close price"] > data["EMA25"]) & (data["RSI3"] > 82)
-    data["Sell"] = (data["RSI3"] < 20)
     return data
 
 
