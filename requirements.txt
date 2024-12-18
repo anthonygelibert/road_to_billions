@@ -8,3 +8,5 @@ pandas~=2.2
 plotly~=5.24
 # To ease data analysis
 ta~=0.11
+# To create datasclasses
+pydantic~=2.10
