@@ -1,3 +1,3 @@
 """Wayne."""
 
-__all__ = ["wayne"]
+__all__ = ["models", "wayne"]

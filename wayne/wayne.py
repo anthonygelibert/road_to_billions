@@ -2,64 +2,25 @@
 
 """Wayne script."""
 
+from __future__ import annotations
+
 import os
 import sys
-from typing import Annotated
 
 import pandas as pd
 import plotly.graph_objects as go
 from binance.spot import Spot as Client
 from plotly.subplots import make_subplots
-from pydantic import BaseModel, confloat, NonNegativeFloat, PositiveFloat
 from rich import print, traceback  # noqa:A004
 from rich.console import Console
 from rich.table import Table
 from ta.momentum import RSIIndicator
 from ta.trend import EMAIndicator
 
+from models import InvestResult
+
 assert "API_KEY" in os.environ, "Please add API_KEY environment variable"
 assert "API_SECRET" in os.environ, "Please add API_SECRET environment variable"
-
-
-class InvestResult(BaseModel):
-    """Result of an investment strategy."""
-
-    capital_start: PositiveFloat
-    """Capital start."""
-    capital_end: float
-    """Capital end."""
-    positions_end: NonNegativeFloat
-    """Positions at end."""
-    drawdown: Annotated[float, confloat(ge=0., le=1.)]
-    """Drawdown."""
-    capital_curve: list[float]
-    """Capital curve."""
-
-    @property
-    def profit(self) -> float:
-        """Profit on the period."""
-        return self.capital_end - self.capital_start
-
-    @property
-    def profit_percentage(self) -> float:
-        """Profit (percentage) on the period."""
-        return (self.profit / self.capital_start) * 100.
-
-    @property
-    def max(self) -> float:
-        """Maximum value of the capital on the period."""
-        return max(self.capital_curve)
-
-    @property
-    def min(self) -> float:
-        """Minimal value of the capital on the period."""
-        return min(self.capital_curve)
-
-    @property
-    def capital_structure(self) -> str:
-        """Structure of the capital at the end of the period."""
-        return "liquidity" if self.positions_end == 0. else (f"{self.positions_end:.2f} x "
-                                                             f"{self.capital_end / self.positions_end:.2f}")
 
 
 def _get_data(symbol: str, *, interval: str = "1d", limit: int = 1000) -> pd.DataFrame:
