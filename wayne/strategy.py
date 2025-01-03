@@ -57,6 +57,7 @@ class TrailingStopStrategy(Strategy):
         current_capital = capital = self._capital_start
         capital_curve: list[float] = []
 
+        platform_fees = 0.
         peak = capital
         positions = 0.
         drawdown = 0.
@@ -68,7 +69,10 @@ class TrailingStopStrategy(Strategy):
             if positions == 0.:
                 if row["Buy"]:
                     entry_price = row["Close price"]
-                    positions = capital / entry_price
+                    positions = (capital / entry_price)
+                    # https://www.binance.com/fr/support/faq/e85d6e703b874674840122196b89780a
+                    platform_fees += positions * entry_price * 0.001  # 1‰ fee.
+                    positions *= 0.999  # 1‰ fee.
                     capital = 0.
                     stop_loss = entry_price * (1. - kwargs["stop_loss_pct"])
                     trailing_stop = entry_price * (1. + kwargs["trailing_stop_pct"])
@@ -78,7 +82,10 @@ class TrailingStopStrategy(Strategy):
                 if kwargs["secure"]:
                     trailing_stop = entry_price * (1. + kwargs["trailing_stop_pct"])
             elif row["Low price"] < stop_loss:
-                capital = positions * stop_loss
+                capital = (positions * stop_loss)
+                # https://www.binance.com/fr/support/faq/e85d6e703b874674840122196b89780a
+                platform_fees += capital * 0.001  # 1‰ fee.
+                capital *= 0.999  # 1‰ fee.
                 positions = 0.
 
             current_capital = capital if positions == 0. else positions * row["Close price"]
@@ -88,4 +95,4 @@ class TrailingStopStrategy(Strategy):
             capital_curve.append(current_capital)
 
         return InvestResult(capital_start=self._capital_start, capital_end=current_capital, drawdown=drawdown,
-                            capital_curve=capital_curve, positions_end=positions)
+                            capital_curve=capital_curve, positions_end=positions, platform_fees=platform_fees)

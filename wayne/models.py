@@ -36,6 +36,8 @@ class InvestResult(BaseModel):
     """Positions at end."""
     drawdown: Between0And1
     """Drawdown."""
+    platform_fees: float
+    """Platform fees."""
     capital_curve: list[float]
     """Capital curve."""
 

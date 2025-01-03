@@ -78,6 +78,7 @@ class Wayne:
         table.add_row("Profit", *[f"{res.profit:.2f} USD" for res in results.values()])
         table.add_row("Rentabilité", *[f"{res.profit_percentage:.2f}%" for res in results.values()])
         table.add_row("Drawdown maximal", *[f"{res.drawdown * 100.:.2f}%" for res in results.values()])
+        table.add_row("Frais de plateforme", *[f"{res.platform_fees:.2f} USD" for res in results.values()])
         table.add_section()
         table.add_row("Min", *[f"{res.min:.2f} USD" for res in results.values()])
         table.add_row("Max", *[f"{res.max:.2f} USD" for res in results.values()])
