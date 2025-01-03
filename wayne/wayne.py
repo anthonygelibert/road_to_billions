@@ -76,11 +76,11 @@ class Wayne:
         for name in results:
             table.add_column(name)
 
-        table.add_row("Capital initial", *[f"{res.capital_start:.2f} USD" for res in results.values()])
+        table.add_row("Capital initial", *[f"{res.capital_start:.0f} USD" for res in results.values()])
         table.add_row("Duration", *[f"{self._limit} x {self._interval}"] * len(results))
         table.add_section()
         table.add_row("Capital final",
-                      *[f"{res.capital_end:.2f} USD ({res.capital_structure})" for res in results.values()])
+                      *[f"{res.capital_end:.2f} USD\n ↳ {res.capital_structure}" for res in results.values()])
         table.add_row("Profit", *[f"{res.profit:.2f} USD" for res in results.values()])
         table.add_row("Rentabilité", *[f"{res.profit_percentage:.2f}%" for res in results.values()])
         table.add_row("Drawdown maximal", *[f"{res.drawdown * 100.:.2f}%" for res in results.values()])
