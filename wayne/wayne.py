@@ -16,7 +16,7 @@ from rich import print, traceback  # noqa:A004
 from rich.console import Console
 from rich.table import Table
 
-from strategy import EMARSIBuyOrderGenerator, TrailingStopStrategy
+from strategy import EMARSIBuyOrderGenerator, MACDBuyOrderGenerator, TrailingStopStrategy
 
 if TYPE_CHECKING:
     from models import InvestResult
@@ -36,17 +36,23 @@ class Wayne:
 
     def earn_money(self, *, enable_curves: bool) -> None:
         """Run the analysis."""
-        order_generator = EMARSIBuyOrderGenerator(self._raw_data)
-        buy_order_strategy = "EMA25 + RSI3>82"
-        completed_data = order_generator.generate(ema_window=25, rsi_window=3, rsi_threshold=82)
+        order_generator_ema_rsi = EMARSIBuyOrderGenerator(self._raw_data)
+        completed_data_ema_rsi = order_generator_ema_rsi.generate(ema_window=25, rsi_window=3, rsi_threshold=82)
 
-        tss = TrailingStopStrategy(completed_data, capital=1000.)
-        results = {"Secure == False": tss.apply(secure=False, stop_loss_pct=.032, trailing_stop_pct=.001),
-                   "Secure == True": tss.apply(secure=True, stop_loss_pct=.032, trailing_stop_pct=.001)}
+        order_generator_macd = MACDBuyOrderGenerator(self._raw_data)
+        completed_data_macd = order_generator_macd.generate()
 
-        self._print_report(buy_order_strategy, results)
+        tss_ema_rsi = TrailingStopStrategy(completed_data_ema_rsi, capital=1000.)
+        tss_macd = TrailingStopStrategy(completed_data_macd, capital=1000.)
+        results = {"EMA25 + RSI3>82 + !Secure": tss_ema_rsi.apply(secure=False, stop_loss_pct=.032,
+                                                                  trailing_stop_pct=.001),
+                   "EMA25 + RSI3>82 + Secure": tss_ema_rsi.apply(secure=True, stop_loss_pct=.032,
+                                                                 trailing_stop_pct=.001),
+                   "MACD": tss_macd.apply(secure=False, stop_loss_pct=.032, trailing_stop_pct=.001)}
+
+        self._print_report(results)
         if enable_curves:
-            self._print_curves(completed_data, buy_order_strategy, results)
+            self._print_curves(completed_data_ema_rsi, buy_order_strategy, results)
 
     def _get_data(self) -> pd.DataFrame:
         """Get the raw data for a symbol."""
@@ -64,8 +70,8 @@ class Wayne:
         kls["Open time"] = pd.to_datetime(kls["Open time"], unit="ms")
         return kls.set_index("Open time")
 
-    def _print_report(self, buy_order_strategy: str, results: dict[str, InvestResult]) -> None:
-        table = Table(title=f"Report “Trailing Stop” on {self._symbol} ({buy_order_strategy})", title_style="bold red")
+    def _print_report(self, results: dict[str, InvestResult]) -> None:
+        table = Table(title=f"Trailing Stop on {self._symbol}", title_style="bold red")
         table.add_column(justify="right", style="bold cyan")
         for name in results:
             table.add_column(name)
@@ -84,14 +90,14 @@ class Wayne:
         table.add_row("Max", *[f"{res.max:.2f} USD" for res in results.values()])
         Console().print(table)
 
-    def _print_curves(self, data: pd.DataFrame, buy_order_strategy: str, results: dict[str, InvestResult]) -> None:
+    def _print_curves(self, data: pd.DataFrame, results: dict[str, InvestResult]) -> None:
         """Display BTC2USD curve."""
         candlestick = go.Candlestick(x=data.index, open=data["Open price"], high=data["High price"],
                                      low=data["Low price"], close=data["Close price"], name="Stock")
         ema = go.Scatter(x=data.index, y=data["EMA"], line={"color": "blue"}, mode="lines", name="EMA")
 
-        fig = make_subplots(rows=1 + len(results), shared_xaxes=True, subplot_titles=(
-                f"{self._symbol} ({buy_order_strategy})", *[f"Capital ({name})" for name in results]))
+        fig = make_subplots(rows=1 + len(results), shared_xaxes=True,
+                            subplot_titles=(f"{self._symbol}", *[f"Capital ({name})" for name in results]))
         fig.add_trace(candlestick, 1, 1)
         fig.update_xaxes(rangeslider_visible=False)
         fig.add_trace(ema, 1, 1)

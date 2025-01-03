@@ -5,7 +5,7 @@ from typing import Any, override, Unpack
 
 import pandas as pd
 from ta.momentum import RSIIndicator
-from ta.trend import EMAIndicator
+from ta.trend import EMAIndicator, MACD
 
 from models import EMARSIBuyOrderGeneratorParameters, InvestResult, TrailingStopParameters
 
@@ -34,6 +34,17 @@ class EMARSIBuyOrderGenerator(BuyOrderGenerator):
         new_data["RSI"] = RSIIndicator(close=new_data["Close price"], window=kwargs["rsi_window"]).rsi()
         # Took these values from a trading experimentation code:
         new_data["Buy"] = (new_data["Close price"] > new_data["EMA"]) & (new_data["RSI"] > kwargs["rsi_threshold"])
+        return new_data
+
+
+class MACDBuyOrderGenerator(BuyOrderGenerator):
+    """Buy order generator based on the MACD."""
+
+    @override
+    def generate(self) -> pd.DataFrame:
+        """Generate “buy” orders using the MACD."""
+        new_data = self._data.copy()
+        new_data["Buy"] = MACD(close=new_data["Close price"]).macd_signal()
         return new_data
 
 
