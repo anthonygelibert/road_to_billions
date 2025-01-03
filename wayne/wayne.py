@@ -52,7 +52,7 @@ class Wayne:
 
         self._print_report(results)
         if enable_curves:
-            self._print_curves(completed_data_ema_rsi, buy_order_strategy, results)
+            self._print_curves(completed_data_ema_rsi, results)
 
     def _get_data(self) -> pd.DataFrame:
         """Get the raw data for a symbol."""
