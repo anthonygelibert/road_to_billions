@@ -44,11 +44,10 @@ class Wayne:
 
         tss_ema_rsi = TrailingStopStrategy(completed_data_ema_rsi, capital=1000.)
         tss_macd = TrailingStopStrategy(completed_data_macd, capital=1000.)
-        results = {"EMA25 + RSI3>82 + !Secure": tss_ema_rsi.apply(secure=False, stop_loss_pct=.032,
-                                                                  trailing_stop_pct=.001),
-                   "EMA25 + RSI3>82 + Secure": tss_ema_rsi.apply(secure=True, stop_loss_pct=.032,
-                                                                 trailing_stop_pct=.001),
-                   "MACD": tss_macd.apply(secure=False, stop_loss_pct=.032, trailing_stop_pct=.001)}
+        results = {"EMA/RSI3 + !Secure": tss_ema_rsi.apply(secure=False, stop_loss_pct=.032, trailing_stop_pct=.001),
+                   "EMA/RSI3 + Secure": tss_ema_rsi.apply(secure=True, stop_loss_pct=.032, trailing_stop_pct=.001),
+                   "MACD + !Secure": tss_macd.apply(secure=False, stop_loss_pct=.032, trailing_stop_pct=.001),
+                   "MACD + Secure": tss_macd.apply(secure=True, stop_loss_pct=.032, trailing_stop_pct=.001)}
 
         self._print_report(results)
         if enable_curves:
@@ -86,8 +85,8 @@ class Wayne:
         table.add_row("Drawdown maximal", *[f"{res.drawdown * 100.:.2f}%" for res in results.values()])
         table.add_row("Frais de plateforme", *[f"{res.platform_fees:.2f} USD" for res in results.values()])
         table.add_section()
-        table.add_row("Min", *[f"{res.min:.2f} USD" for res in results.values()])
-        table.add_row("Max", *[f"{res.max:.2f} USD" for res in results.values()])
+        table.add_row("Capital minimal", *[f"{res.min:.2f} USD" for res in results.values()])
+        table.add_row("Capital maximal", *[f"{res.max:.2f} USD" for res in results.values()])
         Console().print(table)
 
     def _print_curves(self, data: pd.DataFrame, results: dict[str, InvestResult]) -> None:
