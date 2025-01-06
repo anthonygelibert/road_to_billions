@@ -44,7 +44,7 @@ class MACDBuyOrderGenerator(BuyOrderGenerator):
     def generate(self) -> pd.DataFrame:
         """Generate “buy” orders using the MACD."""
         new_data = self._data.copy()
-        new_data["Buy"] = MACD(close=new_data["Close price"]).macd_signal()
+        new_data["Buy"] = MACD(close=new_data["Close price"]).macd_diff() > 0
         return new_data
 
 
