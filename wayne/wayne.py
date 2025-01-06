@@ -44,10 +44,8 @@ class Wayne:
 
         tss_ema_rsi = TrailingStopStrategy(completed_data_ema_rsi, capital=1000.)
         tss_macd = TrailingStopStrategy(completed_data_macd, capital=1000.)
-        results = {"EMA/RSI3 + !Secure": tss_ema_rsi.apply(secure=False, stop_loss_pct=.032, trailing_stop_pct=.001),
-                   "EMA/RSI3 + Secure": tss_ema_rsi.apply(secure=True, stop_loss_pct=.032, trailing_stop_pct=.001),
-                   "MACD + !Secure": tss_macd.apply(secure=False, stop_loss_pct=.032, trailing_stop_pct=.001),
-                   "MACD + Secure": tss_macd.apply(secure=True, stop_loss_pct=.032, trailing_stop_pct=.001)}
+        results = {"EMA/RSI3": tss_ema_rsi.apply(stop_loss_pct=.032, trailing_stop_pct=.001),
+                   "MACD": tss_macd.apply(stop_loss_pct=.032, trailing_stop_pct=.001)}
 
         self._print_report(results)
         if enable_curves:

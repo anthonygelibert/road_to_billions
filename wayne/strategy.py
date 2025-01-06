@@ -90,8 +90,7 @@ class TrailingStopStrategy(Strategy):
             elif row["High price"] > trailing_stop:
                 entry_price = row["High price"]
                 stop_loss = entry_price * (1. - kwargs["stop_loss_pct"])
-                if kwargs["secure"]:
-                    trailing_stop = entry_price * (1. + kwargs["trailing_stop_pct"])
+                trailing_stop = entry_price * (1. + kwargs["trailing_stop_pct"])
             elif row["Low price"] < stop_loss:
                 capital = (positions * stop_loss)
                 # https://www.binance.com/fr/support/faq/e85d6e703b874674840122196b89780a

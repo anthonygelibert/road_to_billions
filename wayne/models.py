@@ -12,7 +12,6 @@ type Between0And1 = Annotated[float, confloat(ge=0., le=1.)]
 class TrailingStopParameters(TypedDict):
     """Parameters for a trailing stop strategy."""
 
-    secure: bool
     stop_loss_pct: Between0And1
     trailing_stop_pct: Between0And1
 
