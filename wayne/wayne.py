@@ -4,7 +4,9 @@
 
 from __future__ import annotations
 
+import json
 import os
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import click
@@ -23,6 +25,13 @@ if TYPE_CHECKING:
 
 assert "API_KEY" in os.environ, "Please add API_KEY environment variable"
 assert "API_SECRET" in os.environ, "Please add API_SECRET environment variable"
+
+
+def download_coin_info() -> None:
+    """Download the coin information to update the “coin_info” JSON file."""
+    client = Client(os.environ["API_KEY"], os.environ["API_SECRET"])
+    # noinspection PyArgumentList
+    Path("assets/coin_info.json").write_text(json.dumps(client.coin_info()), encoding="utf-8")
 
 
 class Wayne:
@@ -114,6 +123,7 @@ class Wayne:
 def wayne(symbol: str, *, curves: bool) -> None:
     """Wayne."""
     traceback.install(width=200, show_locals=True)
+    # download_coin_info()
     Wayne(symbol).earn_money(enable_curves=curves)
 
 
