@@ -7,7 +7,6 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 import click
 from binance.spot import Spot as Client
@@ -17,11 +16,8 @@ from rich.console import Console
 from rich.progress import track
 from rich.table import Table
 
-from models import CoinInfo
+from models import CoinInfo, InvestmentEvaluation
 from strategy import Wayne
-
-if TYPE_CHECKING:
-    from models import InvestResult
 
 assert "API_KEY" in os.environ, "Please add API_KEY environment variable"
 assert "API_SECRET" in os.environ, "Please add API_SECRET environment variable"
@@ -69,18 +65,17 @@ def evaluate_symbols_offline(input_path: Path, *, capital: float, interval: str,
     cis = [CoinInfo.model_validate(rci) for rci in rcis if
            not rci["isLegalMoney"] and rci["trading"] and rci["coin"] != "USDT"]
 
-    results: list[tuple[str, InvestResult]] = []
+    results: list[InvestmentEvaluation] = []
     for ci in track(cis, description="Evaluating symbols…"):
         w = Wayne(ci.symbol, capital=capital, limit=limit, interval=interval)
-        results.append((ci.symbol, w.earn_money(enable_report=False, enable_curves=False)))
+        result = w.earn_money(enable_report=False, enable_curves=False)
+        results.append(InvestmentEvaluation(symbol=ci.symbol, result=result))
 
-    results.sort(key=lambda result: result[1].profit, reverse=True)
-
-    table = Table(title=f"Evaluate {len(results)} symbols", title_style="bold red", show_header=False)
+    table = Table(title=f"Evaluate {len(results)} symbols", title_style="bold red")
     table.add_column(justify="right", style="bold cyan")
-    table.add_column()
-    for res in results[:5]:
-        table.add_row(res[0], f"{res[1].profit:.2f} USD")
+    table.add_column("Profit")
+    for res in sorted(results, reverse=True)[:5]:
+        table.add_row(res.symbol, f"{res.profit:.2f} USD")
     Console().print(table)
 
 

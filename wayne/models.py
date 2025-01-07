@@ -126,3 +126,21 @@ class CoinInfo(BaseModel):
     def symbol(self) -> str:
         """Symbol of the coin."""
         return f"{self.coin}USDT"
+
+
+class InvestmentEvaluation(BaseModel):
+    """Investment evaluation information."""
+
+    model_config = ConfigDict(frozen=True)
+
+    symbol: str
+    result: InvestResult
+
+    @property
+    def profit(self) -> float:
+        """Investment profit."""
+        return self.result.profit
+
+    def __lt__(self, other: InvestmentEvaluation) -> bool:
+        """Comparison using profit."""
+        return self.profit < other.profit
