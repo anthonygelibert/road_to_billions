@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Annotated, TypedDict
 
-from pydantic import BaseModel, confloat, NonNegativeFloat, PositiveFloat
+from pydantic import BaseModel, ConfigDict, confloat, NonNegativeFloat, PositiveFloat
 
 type Between0And1 = Annotated[float, confloat(ge=0., le=1.)]
 
@@ -26,6 +26,8 @@ class EMARSIBuyOrderGeneratorParameters(TypedDict):
 
 class InvestResult(BaseModel):
     """Result of an investment strategy."""
+
+    model_config = ConfigDict(frozen=True)
 
     capital_start: PositiveFloat
     """Capital start."""
