@@ -78,7 +78,7 @@ class TrailingStopStrategy(Strategy):
 
         for _, row in self._data.iterrows():
             if positions == 0.:
-                if row["Buy"]:
+                if row["Buy"] and capital > 0.:
                     entry_price = row["Close price"]
                     positions = (capital / entry_price)
                     # https://www.binance.com/fr/support/faq/e85d6e703b874674840122196b89780a
