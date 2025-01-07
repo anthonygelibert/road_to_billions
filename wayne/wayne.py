@@ -64,18 +64,19 @@ def download_coin_info(output_path: Path) -> None:
 @click.option("--limit", type=IntRange(min_open=True, min=0, max=1000), default=1000, help="Limit")
 def evaluate_symbols_offline(input_path: Path, *, capital: float, interval: str, limit: int) -> None:
     """Look for symbols to invest in."""
-    coins_info = json.loads(input_path.read_text(encoding="utf-8"))
+    rcis = json.loads(input_path.read_text(encoding="utf-8"))
+    # Don't produce a Generator to allow “rich” to know the length of the list (and estimate the duration).
+    cis = [CoinInfo.model_validate(rci) for rci in rcis if
+           not rci["isLegalMoney"] and rci["trading"] and rci["coin"] != "USDT"]
+
     results: list[tuple[str, InvestResult]] = []
-    for raw_coin_info in track(coins_info, description="Evaluating symbols…"):
-        coin_info = CoinInfo.model_validate(raw_coin_info)
-        coin_name = f"{coin_info.coin}USDT"
-        if not coin_info.is_legal_money and coin_info.trading and coin_info.coin != "USDT":
-            w = Wayne(coin_name, capital=capital, limit=limit, interval=interval)
-            results.append((coin_name, w.earn_money(enable_report=False, enable_curves=False)))
+    for ci in track(cis, description="Evaluating symbols…"):
+        w = Wayne(ci.symbol, capital=capital, limit=limit, interval=interval)
+        results.append((ci.symbol, w.earn_money(enable_report=False, enable_curves=False)))
 
     results.sort(key=lambda result: result[1].profit, reverse=True)
 
-    table = Table(title=f"Evaluate symbols {len(results)}/{len(coins_info)}", title_style="bold red", show_header=False)
+    table = Table(title=f"Evaluate {len(results)} symbols", title_style="bold red", show_header=False)
     table.add_column(justify="right", style="bold cyan")
     table.add_column()
     for res in results[:5]:

@@ -121,3 +121,8 @@ class CoinInfo(BaseModel):
     is_legal_money: Annotated[bool, Field(alias="isLegalMoney")]
     trading: bool
     network_list: Annotated[list[Network], Field(alias="networkList")]
+
+    @property
+    def symbol(self) -> str:
+        """Symbol of the coin."""
+        return f"{self.coin}USDT"
