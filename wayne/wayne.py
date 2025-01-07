@@ -43,7 +43,7 @@ class Wayne:
         self._interval = interval
         self._raw_data = self._get_data()
 
-    def earn_money(self, *, enable_curves: bool) -> None:
+    def earn_money(self, *, enable_report: bool, enable_curves: bool) -> InvestResult:
         """Run the analysis."""
         order_generator_ema_rsi = EMARSIBuyOrderGenerator(self._raw_data)
         completed_data_ema_rsi = order_generator_ema_rsi.generate(ema_window=25, rsi_window=3, rsi_threshold=82)
@@ -56,7 +56,8 @@ class Wayne:
         results = {"EMA/RSI3": tss_ema_rsi.apply(stop_loss_pct=.032, trailing_stop_pct=.001),
                    "MACD": tss_macd.apply(stop_loss_pct=.032, trailing_stop_pct=.001)}
 
-        self._print_report(results)
+        if enable_report:
+            self._print_report(results)
         if enable_curves:
             self._print_curves(completed_data_ema_rsi, results)
 
@@ -125,12 +126,13 @@ class Wayne:
 
 @click.command()
 @click.option("--symbol", default="BTCUSDT", help="Symbol to analyze")
+@click.option("--report", default=False, is_flag=True, help="Display the report")
 @click.option("--curves", default=False, is_flag=True, help="Display the curves")
-def wayne(symbol: str, *, curves: bool) -> None:
+def wayne(symbol: str, *, report: bool, curves: bool) -> None:
     """Wayne."""
     traceback.install(width=200, show_locals=True)
+    Wayne(symbol).earn_money(enable_report=report, enable_curves=curves)
     # download_coin_info()
-    Wayne(symbol).earn_money(enable_curves=curves)
 
 
 if __name__ == "__main__":
