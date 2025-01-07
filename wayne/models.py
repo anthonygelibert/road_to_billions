@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from typing import Annotated, TypedDict
 
-from pydantic import BaseModel, ConfigDict, confloat, NonNegativeFloat, PositiveFloat
+from pydantic import BaseModel, ConfigDict, Field, NonNegativeFloat, PositiveFloat
 
-type Between0And1 = Annotated[float, confloat(ge=0., le=1.)]
+type Between0And1 = Annotated[float, Field(ge=0., le=1.)]  # noqa:E252 # False positive from ruff.
 
 
 class TrailingStopParameters(TypedDict):
