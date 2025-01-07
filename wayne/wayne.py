@@ -69,11 +69,17 @@ class Wayne:
         # noinspection PyArgumentList
         kls = pd.DataFrame(client.ui_klines(symbol=self._symbol, interval=self._interval, limit=self._limit),
                            columns=column_names)
-        kls["Close price"] = pd.to_numeric(kls["Close price"])
+        kls["Open time"] = pd.to_datetime(kls["Open time"], unit="ms")
         kls["Open price"] = pd.to_numeric(kls["Open price"])
         kls["High price"] = pd.to_numeric(kls["High price"])
         kls["Low price"] = pd.to_numeric(kls["Low price"])
-        kls["Open time"] = pd.to_datetime(kls["Open time"], unit="ms")
+        kls["Close price"] = pd.to_numeric(kls["Close price"])
+        kls["Volume"] = pd.to_numeric(kls["Volume"])
+        kls["Kline close time"] = pd.to_datetime(kls["Kline close time"], unit="ms")
+        kls["Quote asset volume"] = pd.to_numeric(kls["Quote asset volume"])
+        kls["Number of trades"] = pd.to_numeric(kls["Number of trades"])
+        kls["Taker buy base asset volume"] = pd.to_numeric(kls["Taker buy base asset volume"])
+        kls["Taker buy quote asset volume"] = pd.to_numeric(kls["Taker buy quote asset volume"])
         return kls.set_index("Open time")
 
     def _print_report(self, results: dict[str, InvestResult]) -> None:
