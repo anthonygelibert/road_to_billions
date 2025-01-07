@@ -16,8 +16,10 @@ from binance.spot import Spot as Client
 from plotly.subplots import make_subplots
 from rich import print, traceback  # noqa:A004
 from rich.console import Console
+from rich.progress import track
 from rich.table import Table
 
+from models import CoinInfo
 from strategy import EMARSIBuyOrderGenerator, MACDBuyOrderGenerator, TrailingStopStrategy
 
 if TYPE_CHECKING:
@@ -25,13 +27,6 @@ if TYPE_CHECKING:
 
 assert "API_KEY" in os.environ, "Please add API_KEY environment variable"
 assert "API_SECRET" in os.environ, "Please add API_SECRET environment variable"
-
-
-def download_coin_info() -> None:
-    """Download the coin information to update the “coin_info” JSON file."""
-    client = Client(os.environ["API_KEY"], os.environ["API_SECRET"])
-    # noinspection PyArgumentList
-    Path("assets/coin_info.json").write_text(json.dumps(client.coin_info()), encoding="utf-8")
 
 
 class Wayne:
@@ -60,6 +55,8 @@ class Wayne:
             self._print_report(results)
         if enable_curves:
             self._print_curves(completed_data_ema_rsi, results)
+
+        return results["MACD"]
 
     def _get_data(self) -> pd.DataFrame:
         """Get the raw data for a symbol."""
@@ -124,6 +121,33 @@ class Wayne:
         fig.show()
 
 
+def download_coin_info() -> None:
+    """Download the coin information to update the “coin_info” JSON file."""
+    client = Client(os.environ["API_KEY"], os.environ["API_SECRET"])
+    # noinspection PyArgumentList
+    Path("assets/coin_info.json").write_text(json.dumps(client.coin_info()), encoding="utf-8")
+
+
+def evaluate_symbols() -> None:
+    """Look for symbols to invest in."""
+    coins_info = json.loads(Path("assets/coin_info.json").read_text(encoding="utf-8"))
+    results: list[tuple[str, InvestResult]] = []
+    for raw_coin_info in track(coins_info, description="Evaluating symbols…"):
+        coin_info = CoinInfo.model_validate(raw_coin_info)
+        coin_name = f"{coin_info.coin}USDT"
+        if not coin_info.is_legal_money and coin_info.trading and coin_info.coin != "USDT":
+            results.append((coin_name, Wayne(coin_name).earn_money(enable_report=False, enable_curves=False)))
+
+    results.sort(key=lambda result: result[1].profit, reverse=True)
+
+    table = Table(title=f"Evaluate symbols {len(results)}/{len(coins_info)}", title_style="bold red", show_header=False)
+    table.add_column(justify="right", style="bold cyan")
+    table.add_column()
+    for res in results[:5]:
+        table.add_row(res[0], f"{res[1].profit:.2f} USD")
+    Console().print(table)
+
+
 @click.command()
 @click.option("--symbol", default="BTCUSDT", help="Symbol to analyze")
 @click.option("--report", default=False, is_flag=True, help="Display the report")
@@ -131,8 +155,7 @@ class Wayne:
 def wayne(symbol: str, *, report: bool, curves: bool) -> None:
     """Wayne."""
     traceback.install(width=200, show_locals=True)
-    Wayne(symbol).earn_money(enable_report=report, enable_curves=curves)
-    # download_coin_info()
+    Wayne(symbol).earn_money(enable_report=report, enable_curves=curves)  # download_coin_info()  # evaluate_symbols()
 
 
 if __name__ == "__main__":
