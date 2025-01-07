@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING
 
 import click
 from binance.spot import Spot as Client
+from click import FloatRange, IntRange
 from rich import print, traceback  # noqa:A004
 from rich.console import Console
 from rich.progress import track
@@ -35,11 +36,16 @@ def wayne(*, verbose: bool) -> None:
 
 @wayne.command(no_args_is_help=True, context_settings={"help_option_names": ["-h", "--help"]})
 @click.argument("symbol")
+@click.option("--capital", type=FloatRange(min_open=True, min=0.), default=1000., help="Initial capital")
+@click.option("--interval", default="1d", help="Interval")
+@click.option("--limit", type=IntRange(min_open=True, min=0, max=1000), default=1000, help="Limit")
 @click.option("--report", default=False, is_flag=True, help="Display the report")
 @click.option("--curves", default=False, is_flag=True, help="Display the curves")
-def earn_money(symbol: str, *, report: bool, curves: bool) -> None:
+def earn_money(symbol: str, *, capital: float, limit: int, interval: str, report: bool,  # noqa:PLR0913
+               curves: bool) -> None:
     """Run the analysis."""
-    Wayne(symbol).earn_money(enable_report=report, enable_curves=curves)
+    Wayne(symbol, capital=capital, limit=limit, interval=interval).earn_money(enable_report=report,
+                                                                              enable_curves=curves)
 
 
 @wayne.command(context_settings={"help_option_names": ["-h", "--help"]})
@@ -53,7 +59,10 @@ def download_coin_info(output_path: Path) -> None:
 
 @wayne.command(context_settings={"help_option_names": ["-h", "--help"]})
 @click.argument("input_path", type=click.Path(path_type=Path, exists=True))
-def evaluate_symbols_offline(input_path: Path) -> None:
+@click.option("--capital", type=FloatRange(min_open=True, min=0.), default=1000., help="Initial capital")
+@click.option("--interval", default="1d", help="Interval")
+@click.option("--limit", type=IntRange(min_open=True, min=0, max=1000), default=1000, help="Limit")
+def evaluate_symbols_offline(input_path: Path, *, capital: float, interval: str, limit: int) -> None:
     """Look for symbols to invest in."""
     coins_info = json.loads(input_path.read_text(encoding="utf-8"))
     results: list[tuple[str, InvestResult]] = []
@@ -61,7 +70,8 @@ def evaluate_symbols_offline(input_path: Path) -> None:
         coin_info = CoinInfo.model_validate(raw_coin_info)
         coin_name = f"{coin_info.coin}USDT"
         if not coin_info.is_legal_money and coin_info.trading and coin_info.coin != "USDT":
-            results.append((coin_name, Wayne(coin_name).earn_money(enable_report=False, enable_curves=False)))
+            w = Wayne(coin_name, capital=capital, limit=limit, interval=interval)
+            results.append((coin_name, w.earn_money(enable_report=False, enable_curves=False)))
 
     results.sort(key=lambda result: result[1].profit, reverse=True)
 

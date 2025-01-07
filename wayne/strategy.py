@@ -118,8 +118,9 @@ class TrailingStopStrategy(Strategy):
 class Wayne:
     """Call me Bruce."""
 
-    def __init__(self, symbol: str, *, interval: str = "1d", limit: int = 1000) -> None:
+    def __init__(self, symbol: str, *, capital: float, interval: str = "1d", limit: int = 1000) -> None:
         self._symbol = symbol
+        self._capital = capital
         self._limit = limit
         self._interval = interval
         self._raw_data = self._get_data()
@@ -132,8 +133,8 @@ class Wayne:
         order_generator_macd = MACDBuyOrderGenerator(self._raw_data)
         completed_data_macd = order_generator_macd.generate()
 
-        tss_ema_rsi = TrailingStopStrategy(completed_data_ema_rsi, capital=1000.)
-        tss_macd = TrailingStopStrategy(completed_data_macd, capital=1000.)
+        tss_ema_rsi = TrailingStopStrategy(completed_data_ema_rsi, capital=self._capital)
+        tss_macd = TrailingStopStrategy(completed_data_macd, capital=self._capital)
         results = {"EMA/RSI3": tss_ema_rsi.apply(stop_loss_pct=.032, trailing_stop_pct=.001),
                    "MACD": tss_macd.apply(stop_loss_pct=.032, trailing_stop_pct=.001)}
 
