@@ -115,6 +115,80 @@ class TrailingStopStrategy(Strategy):
                             capital_curve=capital_curve, positions_end=positions, platform_fees=platform_fees)
 
 
+class SimpleStrategy(Strategy):
+    """Strategy only based on buying order."""
+
+    @override
+    def apply(self) -> InvestResult:
+        current_capital = capital = self._capital_start
+        capital_curve: list[float] = []
+
+        platform_fees = 0.
+        peak = capital
+        positions = 0.
+        drawdown = 0.
+
+        for _, row in self._data.iterrows():
+            if positions == 0.:
+                if row["Buy"] and capital > 0.:
+                    entry_price = row["Close price"]
+                    positions = (capital / entry_price)
+                    # https://www.binance.com/fr/support/faq/e85d6e703b874674840122196b89780a
+                    platform_fees += positions * entry_price * 0.001  # 1‰ fee.
+                    positions *= 0.999  # 1‰ fee.
+                    capital = 0.
+            elif not row["Buy"]:
+                capital = (positions * row["Close price"])
+                # https://www.binance.com/fr/support/faq/e85d6e703b874674840122196b89780a
+                platform_fees += capital * 0.001  # 1‰ fee.
+                capital *= 0.999  # 1‰ fee.
+                positions = 0.
+
+            current_capital = capital if positions == 0. else positions * row["Close price"]
+            peak = max(current_capital, peak)
+            current_drawdown = (peak - current_capital) / peak
+            drawdown = max(current_drawdown, drawdown)
+            capital_curve.append(current_capital)
+
+        return InvestResult(capital_start=self._capital_start, capital_end=current_capital, drawdown=drawdown,
+                            capital_curve=capital_curve, positions_end=positions, platform_fees=platform_fees)
+
+
+class NoStrategy(Strategy):
+    """No strategy."""
+
+    @override
+    def apply(self) -> InvestResult:
+        capital = self._capital_start
+        capital_curve: list[float] = []
+
+        platform_fees = 0.
+        peak = capital
+        drawdown = 0.
+
+        entry_price = self._data.iloc[0]["Close price"]
+        positions = (capital / entry_price)
+        # https://www.binance.com/fr/support/faq/e85d6e703b874674840122196b89780a
+        platform_fees += positions * entry_price * 0.001  # 1‰ fee.
+        positions *= 0.999  # 1‰ fee.
+
+        for _, row in self._data.iterrows():
+            current_capital = positions * row["Close price"]
+            peak = max(current_capital, peak)
+            current_drawdown = (peak - current_capital) / peak
+            drawdown = max(current_drawdown, drawdown)
+            capital_curve.append(current_capital)
+
+        output_price = self._data.iloc[-1]["Close price"]
+        capital = (positions * output_price)
+        # https://www.binance.com/fr/support/faq/e85d6e703b874674840122196b89780a
+        platform_fees += capital * 0.001  # 1‰ fee.
+        capital *= 0.999  # 1‰ fee.
+
+        return InvestResult(capital_start=self._capital_start, capital_end=capital, drawdown=drawdown,
+                            capital_curve=capital_curve, positions_end=positions, platform_fees=platform_fees)
+
+
 class Wayne:
     """Call me Bruce."""
 
@@ -134,9 +208,10 @@ class Wayne:
         completed_data_macd = order_generator_macd.generate()
 
         tss_ema_rsi = TrailingStopStrategy(completed_data_ema_rsi, capital=self._capital)
-        tss_macd = TrailingStopStrategy(completed_data_macd, capital=self._capital)
-        results = {"EMA/RSI3": tss_ema_rsi.apply(stop_loss_pct=.032, trailing_stop_pct=.001),
-                   "MACD": tss_macd.apply(stop_loss_pct=.032, trailing_stop_pct=.001)}
+        tss_macd = SimpleStrategy(completed_data_macd, capital=self._capital)
+        no_strat = NoStrategy(completed_data_macd, capital=self._capital)
+        results = {"EMA/RSI3": tss_ema_rsi.apply(stop_loss_pct=.032, trailing_stop_pct=.001), "MACD": tss_macd.apply(),
+                   "No strat": no_strat.apply()}
 
         if enable_report:
             self._print_report(results)
