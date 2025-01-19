@@ -197,14 +197,14 @@ class Wayne:
         self._capital = capital
         self._limit = limit
         self._interval = interval
-        self._raw_data = self._get_data()
+        self._data_day, self._data_hour = self._get_data()
 
     def earn_money(self, *, enable_report: bool, enable_curves: bool) -> InvestResult:
         """Run the analysis."""
-        order_generator_ema_rsi = EMARSIBuyOrderGenerator(self._raw_data)
+        order_generator_ema_rsi = EMARSIBuyOrderGenerator(self._data_day)
         completed_data_ema_rsi = order_generator_ema_rsi.generate(ema_window=25, rsi_window=3, rsi_threshold=82)
 
-        order_generator_macd = MACDBuyOrderGenerator(self._raw_data)
+        order_generator_macd = MACDBuyOrderGenerator(self._data_day)
         completed_data_macd = order_generator_macd.generate()
 
         tss_ema_rsi = TrailingStopStrategy(completed_data_ema_rsi, capital=self._capital)
@@ -220,27 +220,43 @@ class Wayne:
 
         return results["MACD"]
 
-    def _get_data(self) -> pd.DataFrame:
+    def _get_data(self) -> tuple[pd.DataFrame, pd.DataFrame]:
         """Get the raw data for a symbol."""
+
+        def convert_dataframe(data: pd.DataFrame) -> pd.DataFrame:
+            """Convert dataframe."""
+            data["Open time"] = pd.to_datetime(data["Open time"], unit="ms")
+            data["Open price"] = pd.to_numeric(data["Open price"])
+            data["High price"] = pd.to_numeric(data["High price"])
+            data["Low price"] = pd.to_numeric(data["Low price"])
+            data["Close price"] = pd.to_numeric(data["Close price"])
+            data["Volume"] = pd.to_numeric(data["Volume"])
+            data["Kline close time"] = pd.to_datetime(data["Kline close time"], unit="ms")
+            data["Quote asset volume"] = pd.to_numeric(data["Quote asset volume"])
+            data["Number of trades"] = pd.to_numeric(data["Number of trades"])
+            data["Taker buy base asset volume"] = pd.to_numeric(data["Taker buy base asset volume"])
+            data["Taker buy quote asset volume"] = pd.to_numeric(data["Taker buy quote asset volume"])
+            return data.set_index("Open time")
+
         client = Client(os.environ["API_KEY"], os.environ["API_SECRET"])
         column_names = ["Open time", "Open price", "High price", "Low price", "Close price", "Volume",
                         "Kline close time", "Quote asset volume", "Number of trades", "Taker buy base asset volume",
                         "Taker buy quote asset volume", "Ignore"]
         # noinspection PyArgumentList
-        kls = pd.DataFrame(client.ui_klines(symbol=self._symbol, interval=self._interval, limit=self._limit),
-                           columns=column_names)
-        kls["Open time"] = pd.to_datetime(kls["Open time"], unit="ms")
-        kls["Open price"] = pd.to_numeric(kls["Open price"])
-        kls["High price"] = pd.to_numeric(kls["High price"])
-        kls["Low price"] = pd.to_numeric(kls["Low price"])
-        kls["Close price"] = pd.to_numeric(kls["Close price"])
-        kls["Volume"] = pd.to_numeric(kls["Volume"])
-        kls["Kline close time"] = pd.to_datetime(kls["Kline close time"], unit="ms")
-        kls["Quote asset volume"] = pd.to_numeric(kls["Quote asset volume"])
-        kls["Number of trades"] = pd.to_numeric(kls["Number of trades"])
-        kls["Taker buy base asset volume"] = pd.to_numeric(kls["Taker buy base asset volume"])
-        kls["Taker buy quote asset volume"] = pd.to_numeric(kls["Taker buy quote asset volume"])
-        return kls.set_index("Open time")
+        kls_day = pd.DataFrame(client.ui_klines(symbol=self._symbol, interval="1d", limit=1000), columns=column_names)
+        oldest_time = kls_day.iloc[0]["Open time"]
+        # noinspection PyArgumentList
+        kls_hour = pd.DataFrame(client.ui_klines(symbol=self._symbol, interval="1h", limit=1000, startTime=oldest_time),
+                                columns=column_names)
+
+        while kls_day.iloc[-1]["Open time"] > kls_hour.iloc[-1]["Open time"]:
+            next_start_time = kls_hour.iloc[-1]["Open time"] + 3600000
+            # noinspection PyArgumentList
+            next_data = pd.DataFrame(
+                    client.ui_klines(symbol=self._symbol, interval="1h", limit=1000, startTime=next_start_time),
+                    columns=column_names)
+            kls_hour = pd.concat([kls_hour, next_data])
+        return convert_dataframe(kls_day), convert_dataframe(kls_hour)
 
     def _print_report(self, results: dict[str, InvestResult]) -> None:
         table = Table(title=f"Trailing Stop on {self._symbol}", title_style="bold red")
