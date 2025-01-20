@@ -42,7 +42,8 @@ class EMARSIBuyOrderGenerator(BuyOrderGenerator):
         # Relative Strength Index (RSI) over the close price: https://www.investopedia.com/terms/r/rsi.asp.
         new_data["RSI"] = RSIIndicator(close=new_data["Close price"], window=kwargs["rsi_window"]).rsi()
         # Took these values from a trading experimentation code:
-        new_data["Buy"] = (new_data["Close price"] > new_data["EMA"]) & (new_data["RSI"] > kwargs["rsi_threshold"])
+        new_data["Buy"] = (new_data["Close price"] > new_data["EMA"]) & (new_data["RSI"] > kwargs["rsi_buy_threshold"])
+        new_data["Sell"] = (new_data["RSI"] < kwargs["rsi_sell_threshold"])
         return new_data
 
 
@@ -203,7 +204,8 @@ class Wayne:
     def earn_money(self, *, enable_report: bool = False, enable_curves: bool = False) -> InvestmentEvaluation:
         """Run the analysis."""
         order_generator_ema_rsi = EMARSIBuyOrderGenerator(self._data_day)
-        completed_data_ema_rsi = order_generator_ema_rsi.generate(ema_window=25, rsi_window=3, rsi_threshold=82)
+        completed_data_ema_rsi = order_generator_ema_rsi.generate(ema_window=25, rsi_window=3, rsi_buy_threshold=82,
+                                                                  rsi_sell_threshold=20)
 
         order_generator_macd = MACDBuyOrderGenerator(self._data_day)
         completed_data_macd = order_generator_macd.generate()

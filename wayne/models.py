@@ -6,7 +6,7 @@ from typing import Annotated, TypedDict
 
 from pydantic import BaseModel, ConfigDict, Field, NonNegativeFloat, PositiveFloat
 
-type Between0And1 = Annotated[float, Field(ge=0., le=1.)]  # noqa:E252 # False positive from ruff.
+type Between0And1 = Annotated[float, Field(ge=0., le=1.)]  # False positive from ruff.
 
 
 class TrailingStopParameters(TypedDict):
@@ -21,7 +21,8 @@ class EMARSIBuyOrderGeneratorParameters(TypedDict):
 
     ema_window: int
     rsi_window: int
-    rsi_threshold: float
+    rsi_buy_threshold: float
+    rsi_sell_threshold: float
 
 
 class InvestResult(BaseModel):
