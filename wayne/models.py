@@ -17,12 +17,19 @@ class TrailingStopParameters(TypedDict):
 
 
 class EMARSIBuyOrderGeneratorParameters(TypedDict):
-    """Parameters for a EMA RSI buy order generator strategy."""
+    """Parameters for a EMA RSI buy/sell order generator strategy."""
 
     ema_window: int
     rsi_window: int
     rsi_buy_threshold: float
     rsi_sell_threshold: float
+
+
+class MACDBuyOrderGeneratorParameters(TypedDict):
+    """Parameters for a MACD buy/sell order generator strategy."""
+
+    macd_buy_threshold: float
+    macd_sell_threshold: float
 
 
 class InvestResult(BaseModel):

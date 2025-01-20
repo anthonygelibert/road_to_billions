@@ -13,7 +13,13 @@ from ta.momentum import RSIIndicator
 from ta.trend import EMAIndicator, MACD
 
 from bin import Client
-from models import EMARSIBuyOrderGeneratorParameters, InvestmentEvaluation, InvestResult, TrailingStopParameters
+from models import (
+    EMARSIBuyOrderGeneratorParameters,
+    InvestmentEvaluation,
+    InvestResult,
+    MACDBuyOrderGeneratorParameters,
+    TrailingStopParameters,
+)
 
 if TYPE_CHECKING:
     import pandas as pd
@@ -51,10 +57,11 @@ class MACDBuyOrderGenerator(BuyOrderGenerator):
     """Buy order generator based on the MACD."""
 
     @override
-    def generate(self) -> pd.DataFrame:
+    def generate(self, **kwargs: Unpack[MACDBuyOrderGeneratorParameters]) -> pd.DataFrame:
         """Generate “buy” orders using the MACD."""
         new_data = self._data.copy()
-        new_data["Buy"] = MACD(close=new_data["Close price"]).macd_diff() > 0
+        new_data["Buy"] = MACD(close=new_data["Close price"]).macd_diff() > kwargs["macd_buy_threshold"]
+        new_data["Sell"] = MACD(close=new_data["Close price"]).macd_diff() < kwargs["macd_sell_threshold"]
         return new_data
 
 
@@ -208,7 +215,7 @@ class Wayne:
                                                                   rsi_sell_threshold=20)
 
         order_generator_macd = MACDBuyOrderGenerator(self._data_day)
-        completed_data_macd = order_generator_macd.generate()
+        completed_data_macd = order_generator_macd.generate(macd_buy_threshold=0, macd_sell_threshold=-10)
 
         tss_ema_rsi = TrailingStopStrategy(completed_data_ema_rsi, capital=self._capital)
         tss_macd = SimpleStrategy(completed_data_macd, capital=self._capital)
