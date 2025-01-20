@@ -147,7 +147,7 @@ class SimpleStrategy(Strategy):
                     platform_fees += positions * entry_price * 0.001  # 1‰ fee.
                     positions *= 0.999  # 1‰ fee.
                     capital = 0.
-            elif not row["Buy"]:
+            elif row["Sell"]:
                 capital = (positions * row["Close price"])
                 # https://www.binance.com/fr/support/faq/e85d6e703b874674840122196b89780a
                 platform_fees += capital * 0.001  # 1‰ fee.
