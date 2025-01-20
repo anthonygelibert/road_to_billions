@@ -1,12 +1,10 @@
 """All implemented strategies."""
+
 from __future__ import annotations
 
-import os
 from abc import ABC, abstractmethod
-from typing import Any, override, Unpack
+from typing import Any, override, TYPE_CHECKING, Unpack
 
-import pandas as pd
-from binance.spot import Spot as Client
 from plotly import graph_objects as go
 from plotly.subplots import make_subplots
 from rich.console import Console
@@ -14,7 +12,11 @@ from rich.table import Table
 from ta.momentum import RSIIndicator
 from ta.trend import EMAIndicator, MACD
 
+from bin import Client
 from models import EMARSIBuyOrderGeneratorParameters, InvestResult, TrailingStopParameters
+
+if TYPE_CHECKING:
+    import pandas as pd
 
 
 class BuyOrderGenerator(ABC):
@@ -192,12 +194,11 @@ class NoStrategy(Strategy):
 class Wayne:
     """Call me Bruce."""
 
-    def __init__(self, symbol: str, *, capital: float, interval: str = "1d", limit: int = 1000) -> None:
+    def __init__(self, symbol: str, *, capital: float, limit: int = 1000) -> None:
         self._symbol = symbol
         self._capital = capital
         self._limit = limit
-        self._interval = interval
-        self._data_day, self._data_hour = self._get_data()
+        self._data_day, self._data_hour = Client().get_day_hour_data(symbol, limit=limit)
 
     def earn_money(self, *, enable_report: bool, enable_curves: bool) -> InvestResult:
         """Run the analysis."""
@@ -220,44 +221,6 @@ class Wayne:
 
         return results["MACD"]
 
-    def _get_data(self) -> tuple[pd.DataFrame, pd.DataFrame]:
-        """Get the raw data for a symbol."""
-
-        def convert_dataframe(data: pd.DataFrame) -> pd.DataFrame:
-            """Convert dataframe."""
-            data["Open time"] = pd.to_datetime(data["Open time"], unit="ms")
-            data["Open price"] = pd.to_numeric(data["Open price"])
-            data["High price"] = pd.to_numeric(data["High price"])
-            data["Low price"] = pd.to_numeric(data["Low price"])
-            data["Close price"] = pd.to_numeric(data["Close price"])
-            data["Volume"] = pd.to_numeric(data["Volume"])
-            data["Kline close time"] = pd.to_datetime(data["Kline close time"], unit="ms")
-            data["Quote asset volume"] = pd.to_numeric(data["Quote asset volume"])
-            data["Number of trades"] = pd.to_numeric(data["Number of trades"])
-            data["Taker buy base asset volume"] = pd.to_numeric(data["Taker buy base asset volume"])
-            data["Taker buy quote asset volume"] = pd.to_numeric(data["Taker buy quote asset volume"])
-            return data.set_index("Open time")
-
-        client = Client(os.environ["API_KEY"], os.environ["API_SECRET"])
-        column_names = ["Open time", "Open price", "High price", "Low price", "Close price", "Volume",
-                        "Kline close time", "Quote asset volume", "Number of trades", "Taker buy base asset volume",
-                        "Taker buy quote asset volume", "Ignore"]
-        # noinspection PyArgumentList
-        kls_day = pd.DataFrame(client.ui_klines(symbol=self._symbol, interval="1d", limit=1000), columns=column_names)
-        oldest_time = kls_day.iloc[0]["Open time"]
-        # noinspection PyArgumentList
-        kls_hour = pd.DataFrame(client.ui_klines(symbol=self._symbol, interval="1h", limit=1000, startTime=oldest_time),
-                                columns=column_names)
-
-        while kls_day.iloc[-1]["Open time"] > kls_hour.iloc[-1]["Open time"]:
-            next_start_time = kls_hour.iloc[-1]["Open time"] + 3600000
-            # noinspection PyArgumentList
-            next_data = pd.DataFrame(
-                    client.ui_klines(symbol=self._symbol, interval="1h", limit=1000, startTime=next_start_time),
-                    columns=column_names)
-            kls_hour = pd.concat([kls_hour, next_data])
-        return convert_dataframe(kls_day), convert_dataframe(kls_hour)
-
     def _print_report(self, results: dict[str, InvestResult]) -> None:
         table = Table(title=f"Trailing Stop on {self._symbol}", title_style="bold red")
         table.add_column(justify="right", style="bold cyan")
@@ -265,7 +228,7 @@ class Wayne:
             table.add_column(name)
 
         table.add_row("Capital initial", *[f"{res.capital_start:.0f} USD" for res in results.values()])
-        table.add_row("Duration", *[f"{self._limit} x {self._interval}"] * len(results))
+        table.add_row("Duration", *[f"{self._limit} x 1d"] * len(results))
         table.add_section()
         table.add_row("Capital final",
                       *[f"{res.capital_end:.2f} USD\n ↳ {res.capital_structure}" for res in results.values()])
