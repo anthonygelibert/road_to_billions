@@ -48,10 +48,10 @@ def download_coin_info(output_path: Path) -> None:
 
 
 @wayne.command(context_settings={"help_option_names": ["-h", "--help"]})
-@click.argument("input_path", type=click.Path(path_type=Path, exists=True))
-@click.option("--capital", type=FloatRange(min_open=True, min=0.), default=1000., help="Initial capital")
-@click.option("--limit", type=IntRange(min_open=True, min=0, max=1000), default=1000, help="Limit")
-def evaluate_symbols_offline(input_path: Path, *, capital: float, limit: int) -> None:
+@click.option("-i", "--input_path", type=click.Path(path_type=Path, exists=True))
+@click.option("-c", "--capital", type=FloatRange(min_open=True, min=0.), default=1000., help="Initial capital")
+@click.option("-l", "--limit", type=IntRange(min_open=True, min=0, max=1000), default=1000, help="Limit")
+def evaluate_symbols_offline(input_path: Path | None, *, capital: float, limit: int) -> None:
     """Look for symbols to invest in."""
     coin_info = Client(API_KEY, API_SECRET).coin_info(from_fake=input_path)
 
