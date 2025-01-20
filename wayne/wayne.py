@@ -18,9 +18,6 @@ from bin import Client
 from models import InvestmentEvaluation
 from strategy import Wayne
 
-assert "API_KEY" in os.environ, "Please add API_KEY environment variable"
-assert "API_SECRET" in os.environ, "Please add API_SECRET environment variable"
-
 
 @click.group()
 @click.option("-v", "--verbose", is_flag=True, default=False, help="Enable verbose mode")
@@ -44,7 +41,7 @@ def earn_money(symbol: str, *, capital: float, limit: int, report: bool, curves:
 @click.option("--output-path", type=Path, default="assets/coin_info.json", help="Output path")
 def download_coin_info(output_path: Path) -> None:
     """Download the coin information to update the “coin_info” JSON file."""
-    Client(os.environ["API_KEY"], os.environ["API_SECRET"]).save_coin_info(output_path)
+    Client(os.environ.get("API_KEY"), os.environ.get("API_SECRET")).save_coin_info(output_path)
 
 
 @wayne.command(context_settings={"help_option_names": ["-h", "--help"]})
@@ -53,7 +50,7 @@ def download_coin_info(output_path: Path) -> None:
 @click.option("--limit", type=IntRange(min_open=True, min=0, max=1000), default=1000, help="Limit")
 def evaluate_symbols_offline(input_path: Path, *, capital: float, limit: int) -> None:
     """Look for symbols to invest in."""
-    cis = Client(os.environ["API_KEY"], os.environ["API_SECRET"]).coin_info(from_fake=input_path)
+    cis = Client(os.environ.get("API_KEY"), os.environ.get("API_SECRET")).coin_info(from_fake=input_path)
 
     results: list[InvestmentEvaluation] = []
     for ci in track(cis, description="Evaluating symbols…"):
