@@ -13,7 +13,7 @@ from ta.momentum import RSIIndicator
 from ta.trend import EMAIndicator, MACD
 
 from bin import Client
-from models import EMARSIBuyOrderGeneratorParameters, InvestResult, TrailingStopParameters
+from models import EMARSIBuyOrderGeneratorParameters, InvestmentEvaluation, InvestResult, TrailingStopParameters
 
 if TYPE_CHECKING:
     import pandas as pd
@@ -200,7 +200,7 @@ class Wayne:
         self._limit = limit
         self._data_day, self._data_hour = Client().get_day_hour_data(symbol, limit=limit)
 
-    def earn_money(self, *, enable_report: bool, enable_curves: bool) -> InvestResult:
+    def earn_money(self, *, enable_report: bool = False, enable_curves: bool = False) -> InvestmentEvaluation:
         """Run the analysis."""
         order_generator_ema_rsi = EMARSIBuyOrderGenerator(self._data_day)
         completed_data_ema_rsi = order_generator_ema_rsi.generate(ema_window=25, rsi_window=3, rsi_threshold=82)
@@ -219,7 +219,7 @@ class Wayne:
         if enable_curves:
             self._print_curves(completed_data_ema_rsi, results)
 
-        return results["MACD"]
+        return InvestmentEvaluation(symbol=self._symbol, result=results["MACD"])
 
     def _print_report(self, results: dict[str, InvestResult]) -> None:
         table = Table(title=f"Trailing Stop on {self._symbol}", title_style="bold red")

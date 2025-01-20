@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+from typing import Final
 
 import click
 from click import FloatRange, IntRange
@@ -15,8 +16,10 @@ from rich.progress import track
 from rich.table import Table
 
 from bin import Client
-from models import InvestmentEvaluation
 from strategy import Wayne
+
+API_SECRET: Final[str | None] = os.environ.get("API_SECRET")
+API_KEY: Final[str | None] = os.environ.get("API_KEY")
 
 
 @click.group()
@@ -41,7 +44,7 @@ def earn_money(symbol: str, *, capital: float, limit: int, report: bool, curves:
 @click.option("--output-path", type=Path, default="assets/coin_info.json", help="Output path")
 def download_coin_info(output_path: Path) -> None:
     """Download the coin information to update the “coin_info” JSON file."""
-    Client(os.environ.get("API_KEY"), os.environ.get("API_SECRET")).save_coin_info(output_path)
+    Client(API_KEY, API_SECRET).save_coin_info(output_path)
 
 
 @wayne.command(context_settings={"help_option_names": ["-h", "--help"]})
@@ -50,19 +53,17 @@ def download_coin_info(output_path: Path) -> None:
 @click.option("--limit", type=IntRange(min_open=True, min=0, max=1000), default=1000, help="Limit")
 def evaluate_symbols_offline(input_path: Path, *, capital: float, limit: int) -> None:
     """Look for symbols to invest in."""
-    cis = Client(os.environ.get("API_KEY"), os.environ.get("API_SECRET")).coin_info(from_fake=input_path)
+    coin_info = Client(API_KEY, API_SECRET).coin_info(from_fake=input_path)
 
-    results: list[InvestmentEvaluation] = []
-    for ci in track(cis, description="Evaluating symbols…"):
-        w = Wayne(ci.symbol, capital=capital, limit=limit)
-        result = w.earn_money(enable_report=False, enable_curves=False)
-        results.append(InvestmentEvaluation(symbol=ci.symbol, result=result))
+    results = [Wayne(ci.symbol, capital=capital, limit=limit).earn_money() for ci in
+               track(coin_info, description="Evaluating symbols…")]
+    best_results = sorted(results, reverse=True)[:5]
 
     table = Table(title=f"Evaluate {len(results)} symbols", title_style="bold red")
     table.add_column(justify="right", style="bold cyan")
     table.add_column("Profit")
-    for res in sorted(results, reverse=True)[:5]:
-        table.add_row(res.symbol, f"{res.profit:.2f} USD")
+    for result in best_results:
+        table.add_row(result.symbol, f"{result.profit:.2f} USD")
     Console().print(table)
 
 
