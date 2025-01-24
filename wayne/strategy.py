@@ -13,13 +13,8 @@ from ta.momentum import RSIIndicator
 from ta.trend import EMAIndicator, MACD
 
 from bin import Client
-from models import (
-    EMARSIBuyOrderGeneratorParameters,
-    InvestmentEvaluation,
-    InvestResult,
-    MACDBuyOrderGeneratorParameters,
-    TrailingStopParameters,
-)
+from models import (EMARSIBuyOrderGeneratorParameters, InvestmentEvaluation, InvestResult,
+                    MACDBuyOrderGeneratorParameters, TrailingStopParameters, )
 
 if TYPE_CHECKING:
     import pandas as pd
@@ -68,9 +63,9 @@ class MACDBuyOrderGenerator(BuyOrderGenerator):
 class Strategy(ABC):
     """Abstract strategy."""
 
-    def __init__(self, data: pd.DataFrame, *, capital: float) -> None:
+    def __init__(self, day_data, *, capital: float) -> None:
         self._capital_start = capital
-        self._data = data
+        self._day_data = day_data
 
     @abstractmethod
     def apply(self, **kwargs: dict[str, Any]) -> InvestResult:
@@ -79,6 +74,10 @@ class Strategy(ABC):
 
 class TrailingStopStrategy(Strategy):
     """Strategy based on a trailing stop."""
+
+    def __init__(self, day_data: pd.DataFrame, hour_data: pd.DataFrame, *, capital: float) -> None:
+        super().__init__(day_data, capital=capital)
+        self._hour_data = hour_data
 
     @override
     def apply(self, **kwargs: Unpack[TrailingStopParameters]) -> InvestResult:
@@ -91,37 +90,39 @@ class TrailingStopStrategy(Strategy):
         drawdown = 0.
 
         stop_loss = 0.
-        trailing_stop = 0.
 
-        for _, row in self._data.iterrows():
-            if positions == 0.:
-                if row["Buy"] and capital > 0.:
-                    entry_price = row["Close price"]
-                    positions = (capital / entry_price)
+        day = 0
+        for _, row in self._hour_data.iterrows():
+            if positions != 0.:
+                stop_loss = max(stop_loss, row["Close price"] * (1. - kwargs["stop_loss_pct"]))
+                if row["Close price"] < stop_loss:
+                    capital = positions * stop_loss
                     # https://www.binance.com/fr/support/faq/e85d6e703b874674840122196b89780a
-                    platform_fees += positions * entry_price * 0.001  # 1‰ fee.
-                    positions *= 0.999  # 1‰ fee.
-                    capital = 0.
-                    stop_loss = entry_price * (1. - kwargs["stop_loss_pct"])
-                    trailing_stop = entry_price * (1. + kwargs["trailing_stop_pct"])
-            elif row["High price"] > trailing_stop:
-                entry_price = row["High price"]
-                stop_loss = entry_price * (1. - kwargs["stop_loss_pct"])
-                trailing_stop = entry_price * (1. + kwargs["trailing_stop_pct"])
-            elif row["Low price"] < stop_loss:
-                capital = (positions * stop_loss)
-                # https://www.binance.com/fr/support/faq/e85d6e703b874674840122196b89780a
-                platform_fees += capital * 0.001  # 1‰ fee.
-                capital *= 0.999  # 1‰ fee.
-                positions = 0.
+                    platform_fees += capital * 0.001  # 1‰ fee.
+                    capital *= 0.999  # 1‰ fee.
+                    positions = 0.
+            if day < len(self._day_data) and row.name == self._day_data.iloc[day].name:
+                day_row = self._day_data.iloc[day]
+                if positions == 0.:
+                    if day_row["Buy"] and capital > 0.:
+                        entry_price = day_row["Close price"]
+                        positions = capital / entry_price
+                        # https://www.binance.com/fr/support/faq/e85d6e703b874674840122196b89780a
+                        platform_fees += positions * entry_price * 0.001  # 1‰ fee.
+                        positions *= 0.999  # 1‰ fee.
+                        capital = 0.
+                        stop_loss = entry_price * (1. - kwargs["stop_loss_pct"])
+                day += 1
 
-            current_capital = capital if positions == 0. else positions * row["Close price"]
-            peak = max(current_capital, peak)
-            current_drawdown = (peak - current_capital) / peak
-            drawdown = max(current_drawdown, drawdown)
-            capital_curve.append(current_capital)
+                current_capital = capital if positions == 0. else positions * day_row["Close price"]
+                peak = max(current_capital, peak)
 
-        return InvestResult(capital_start=self._capital_start, capital_end=current_capital, drawdown=drawdown,
+                current_drawdown = (peak - current_capital) / peak
+
+                drawdown = max(current_drawdown, drawdown)
+                capital_curve.append(current_capital)
+
+        return InvestResult(capital_start=self._capital_start, capital_end=current_capital, drawdown=0,
                             capital_curve=capital_curve, positions_end=positions, platform_fees=platform_fees)
 
 
@@ -138,7 +139,7 @@ class SimpleStrategy(Strategy):
         positions = 0.
         drawdown = 0.
 
-        for _, row in self._data.iterrows():
+        for _, row in self._day_data.iterrows():
             if positions == 0.:
                 if row["Buy"] and capital > 0.:
                     entry_price = row["Close price"]
@@ -176,20 +177,20 @@ class NoStrategy(Strategy):
         peak = capital
         drawdown = 0.
 
-        entry_price = self._data.iloc[0]["Close price"]
+        entry_price = self._day_data.iloc[0]["Close price"]
         positions = (capital / entry_price)
         # https://www.binance.com/fr/support/faq/e85d6e703b874674840122196b89780a
         platform_fees += positions * entry_price * 0.001  # 1‰ fee.
         positions *= 0.999  # 1‰ fee.
 
-        for _, row in self._data.iterrows():
+        for _, row in self._day_data.iterrows():
             current_capital = positions * row["Close price"]
             peak = max(current_capital, peak)
             current_drawdown = (peak - current_capital) / peak
             drawdown = max(current_drawdown, drawdown)
             capital_curve.append(current_capital)
 
-        output_price = self._data.iloc[-1]["Close price"]
+        output_price = self._day_data.iloc[-1]["Close price"]
         capital = (positions * output_price)
         # https://www.binance.com/fr/support/faq/e85d6e703b874674840122196b89780a
         platform_fees += capital * 0.001  # 1‰ fee.
@@ -215,20 +216,20 @@ class Wayne:
                                                                   rsi_sell_threshold=20)
 
         order_generator_macd = MACDBuyOrderGenerator(self._data_day)
-        completed_data_macd = order_generator_macd.generate(macd_buy_threshold=0, macd_sell_threshold=-10)
+        completed_data_macd = order_generator_macd.generate(macd_buy_threshold=0, macd_sell_threshold=-1)
 
-        tss_ema_rsi = TrailingStopStrategy(completed_data_ema_rsi, capital=self._capital)
-        tss_macd = SimpleStrategy(completed_data_macd, capital=self._capital)
-        no_strat = NoStrategy(completed_data_macd, capital=self._capital)
-        results = {"EMA/RSI3": tss_ema_rsi.apply(stop_loss_pct=.032, trailing_stop_pct=.001), "MACD": tss_macd.apply(),
-                   "No strat": no_strat.apply()}
+        ts_strat_macd = TrailingStopStrategy(completed_data_ema_rsi, self._data_hour, capital=self._capital)
+        simple_strat_macd = SimpleStrategy(completed_data_ema_rsi, capital=self._capital)
+        no_strat = NoStrategy(completed_data_ema_rsi, capital=self._capital)
+        results = {"TS strat": ts_strat_macd.apply(stop_loss_pct=0.2, trailing_stop_pct=.001),
+                   "Simple strat": simple_strat_macd.apply(), "No strat": no_strat.apply()}
 
         if enable_report:
             self._print_report(results)
         if enable_curves:
             self._print_curves(completed_data_ema_rsi, results)
 
-        return InvestmentEvaluation(symbol=self._symbol, result=results["MACD"])
+        return InvestmentEvaluation(symbol=self._symbol, result=results["TS strat"])
 
     def _print_report(self, results: dict[str, InvestResult]) -> None:
         table = Table(title=f"Trailing Stop on {self._symbol}", title_style="bold red")
