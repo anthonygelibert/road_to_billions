@@ -1,10 +1,20 @@
 [project]
 name = "road-to-billions"
-version = "3.0.0"
-description = "Road to billions…"
-readme = "README.md"
+version = "3"
+description = "Some experimentations around trading with Python and Binance"
+keywords = ["python", "trading", "binance", "cryptocurrency"]
+readme = { file = "README.md", content-type = "text/markdown" }
+license = "MIT"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.13"
+]
 authors = [
-    { name = "Anthony Gelibert", email = "anthony.gelibert@me.com" }
+    { name = "Anthony Gelibert", email = "anthony.gelibert@me.com" },
+    { name = "Camille Francon", email = "camille.francon@carbonbee.fr" },
+    { name = "Jérémy Olivier", email = "jeremy.olivier30@gmail.com" }
 ]
 requires-python = ">=3.13"
 dependencies = [
@@ -19,6 +29,10 @@ dependencies = [
 
 [project.scripts]
 road-to-billions = "road_to_billions:main"
+
+[project.urls]
+Repository = "https://github.com/anthonygelibert/road_to_billions.git"
+Issues = "https://github.com/anthonygelibert/road_to_billions/issues"
 
 [build-system]
 requires = ["hatchling"]
