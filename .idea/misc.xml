@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="Black">
-    <option name="sdkName" value="Python 3.12 (road_to_billions)" />
+    <option name="sdkName" value="Python 3.13 (road_to_billions)" />
   </component>
   <component name="CodeInsightWorkspaceSettings">
     <option name="optimizeImportsOnTheFly" value="true" />
@@ -9,16 +9,10 @@
   <component name="MarkdownSettings">
     <option name="fileGroupingEnabled" value="true" />
   </component>
-  <component name="MarkdownSettingsMigration">
-    <option name="stateVersion" value="1" />
-  </component>
-  <component name="Pandoc.Settings">
-    <option name="pathToPandoc" value="/opt/local/bin/pandoc" />
-  </component>
   <component name="ProjectResources">
     <xml-schema-version>XMLSchema_1_1</xml-schema-version>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_21" default="true" project-jdk-name="Python 3.12 (road_to_billions)" project-jdk-type="Python SDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_23" default="true" project-jdk-name="Python 3.13 (road_to_billions)" project-jdk-type="Python SDK">
     <output url="file://$PROJECT_DIR$/out" />
   </component>
   <component name="PythonCompatibilityInspectionAdvertiser">
@@ -30,7 +24,7 @@
   <component name="TaskProjectConfiguration">
     <server type="GitHub" url="https://github.com" />
   </component>
-  <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="152000" />
+  <component name="TestsVcsConfig">
+    <option name="enabled" value="true" />
   </component>
 </project>

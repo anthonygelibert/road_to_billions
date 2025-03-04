@@ -2,7 +2,6 @@
 <project version="4">
   <component name="RuffConfigService">
     <option name="globalRuffExecutablePath" value="/opt/local/bin/ruff" />
-    <option name="ruffConfigPath" value="$PROJECT_DIR$/ruff.toml" />
     <option name="runRuffOnReformatCode" value="false" />
     <option name="runRuffOnSave" value="true" />
     <option name="useRuffServer" value="true" />
