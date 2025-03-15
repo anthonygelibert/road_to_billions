@@ -7,8 +7,6 @@ Using `uv`, the process is pretty straightforward:
 ```shell
 git clone git@github.com:anthonygelibert/road_to_billions.git
 cd road_to_billions
-uv venv
-source venv/bin/activate
 uv sync
 ```
 
